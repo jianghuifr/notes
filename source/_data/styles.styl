@@ -1,0 +1,259 @@
+// ============================================================
+// 博客个性样式：字体、卡片、层次与细节
+// ============================================================
+
+// 引入衬线标题字体（需在 head 或此处通过 @import 引入）
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+// 设计变量（与主题色 #33ac60 协调）
+$accent = #33ac60;
+$accent-light = lighten($accent, 12%);
+$accent-dark = darken($accent, 8%);
+$card-radius = 12px;
+$card-shadow = 0 2px 12px rgba(0, 0, 0, 0.06);
+$card-shadow-hover = 0 8px 28px rgba(51, 172, 96, 0.12);
+$serif-heading = 'Noto Serif SC', 'PingFang SC', 'Microsoft YaHei', serif;
+
+// ---------------------------------------------------------------
+// 全局：背景与字体
+// ---------------------------------------------------------------
+body {
+  background-color: #f8f9f8;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2333ac60' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1e1e1e;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2333ac60' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+// ---------------------------------------------------------------
+// 顶栏与品牌
+// ---------------------------------------------------------------
+.headband {
+  height: 4px;
+  background: linear-gradient(90deg, $accent 0%, $accent-light 50%, $accent 100%);
+  background-size: 200% 100%;
+}
+
+.brand {
+  background: none !important;
+  color: unset;
+}
+
+.site-title {
+  font-family: $serif-heading !important;
+  font-weight: 700 !important;
+  font-size: 1.5em !important;
+  letter-spacing: 0.02em;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  border-bottom: 1px solid rgba(51, 172, 96, 0.15);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .header {
+    border-bottom-color: rgba(51, 172, 96, 0.25);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  }
+}
+
+// ---------------------------------------------------------------
+// 首页文章卡片
+// ---------------------------------------------------------------
+.posts-expand .post-block {
+  margin-bottom: 2.5rem;
+  padding: 2rem 2.25rem;
+  background: var(--content-bg-color);
+  border-radius: $card-radius;
+  box-shadow: $card-shadow;
+  border: 1px solid rgba(51, 172, 96, 0.08);
+  transition: box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.posts-expand .post-block:hover {
+  box-shadow: $card-shadow-hover;
+  border-color: rgba(51, 172, 96, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  .posts-expand .post-block {
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+    border-color: rgba(51, 172, 96, 0.15);
+  }
+  .posts-expand .post-block:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    border-color: rgba(51, 172, 96, 0.3);
+  }
+}
+
+.post-block:first-of-type {
+  padding-top: 2rem !important;
+}
+
+// 标题区：衬线字体 + 左侧强调线
+.posts-expand .post-header {
+  font-size: 1.1em;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  padding-left: 1rem;
+  border-left: 4px solid $accent;
+}
+
+.posts-expand .post-title {
+  font-family: $serif-heading !important;
+  font-weight: 600 !important;
+  font-size: 1.45em !important;
+  text-align: left;
+}
+
+.posts-expand .post-title-link {
+  color: var(--text-color) !important;
+}
+
+.posts-expand .post-title-link::before {
+  background: $accent !important;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.posts-expand .post-title-link:hover {
+  color: $accent-dark !important;
+}
+
+.posts-expand .post-meta-container {
+  text-align: left;
+  margin-top: 0.5rem;
+  color: $grey-dark;
+}
+
+.posts-expand .post-meta-container time {
+  border-bottom-color: rgba(51, 172, 96, 0.35);
+}
+
+// 摘要与正文
+.posts-expand .post-body {
+  text-align: left;
+  line-height: 1.85;
+}
+
+.posts-expand .post-button .btn {
+  border-radius: 8px;
+  background: $accent !important;
+  border-color: $accent !important;
+  color: #fff !important;
+  padding: 0.4em 1.2em;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.posts-expand .post-button .btn:hover {
+  background: $accent-dark !important;
+  border-color: $accent-dark !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+// 文章间分隔线
+.post-eof {
+  display: none;
+}
+
+// 文章内标题统一衬线
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+  font-family: $serif-heading !important;
+  color: var(--text-color);
+}
+
+// ---------------------------------------------------------------
+// 分页
+// ---------------------------------------------------------------
+.pagination {
+  border-top: 2px solid rgba(51, 172, 96, 0.2);
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+}
+
+.pagination .prev,
+.pagination .next,
+.pagination .page-number {
+  border-top: none;
+  color: $accent;
+}
+
+.pagination .page-number:hover {
+  color: $accent-dark;
+}
+
+.pagination .page-number.current {
+  background-color: $accent;
+  color: #fff;
+  border-radius: 6px;
+}
+
+// ---------------------------------------------------------------
+// 链接与代码块
+// ---------------------------------------------------------------
+.post-content a {
+  border-bottom-color: rgba(51, 172, 96, 0.4);
+  color: $accent-dark;
+}
+
+.post-content a:hover {
+  border-bottom-color: $accent;
+  color: $accent;
+}
+
+.code-lang {
+  font-size: 1em;
+}
+
+// 归档 / 分类 / 标签页：保持与首页一致的卡片感
+.posts-collapse .post-content::before {
+  background: $accent;
+}
+
+.posts-collapse .post-content .post-header {
+  border-bottom: none;
+}
+
+.collection-title,
+.collection-year {
+  display: none;
+}
+
+// ---------------------------------------------------------------
+// 页脚与主内容区内边距
+// ---------------------------------------------------------------
+.main-inner {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+.footer {
+  border-top: 1px solid rgba(51, 172, 96, 0.12);
+}
+
+@media (max-width: 768px) {
+  .posts-expand .post-block {
+    padding: 1.25rem 1rem;
+  }
+  .posts-expand .post-header {
+    padding-left: 0.75rem;
+    border-left-width: 3px;
+  }
+}
