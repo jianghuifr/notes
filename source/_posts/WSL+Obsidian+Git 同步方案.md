@@ -1,3 +1,9 @@
+---
+title: WSL + Obsidian + Git 同步 Claude Code 会话
+tags:
+  - AI
+  - solutions
+---
 # WSL + Obsidian + Git 同步 Claude Code 会话
 
 ## 整体架构
