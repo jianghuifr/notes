@@ -181,8 +181,10 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0255aadd024e097b",
+  "active": "058fbd81723a64f7",
   "lastOpenFiles": [
+    "source/_posts/deploy~mcp-services.md",
+    "source/_posts/deploy~mcp-services.md.tmp.342213.1775565286066",
     "source/_posts/violentmonkey~raw-code-highlighter.md",
     "source/_posts/python~decorator-order.md",
     "source/_posts/WSL+Obsidian+Git 同步方案.md",
