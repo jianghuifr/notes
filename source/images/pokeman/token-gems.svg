@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 80" width="400" height="80">
+  <defs>
+    <linearGradient id="tRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF5252"/>
+      <stop offset="50%" style="stop-color:#E53935"/>
+      <stop offset="100%" style="stop-color:#B71C1C"/>
+    </linearGradient>
+    <linearGradient id="tBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#42A5F5"/>
+      <stop offset="50%" style="stop-color:#1E88E5"/>
+      <stop offset="100%" style="stop-color:#0D47A1"/>
+    </linearGradient>
+    <linearGradient id="tGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#66BB6A"/>
+      <stop offset="50%" style="stop-color:#43A047"/>
+      <stop offset="100%" style="stop-color:#1B5E20"/>
+    </linearGradient>
+    <linearGradient id="tWhite" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="50%" style="stop-color:#B0BEC5"/>
+      <stop offset="100%" style="stop-color:#78909C"/>
+    </linearGradient>
+    <linearGradient id="tPurple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#AB47BC"/>
+      <stop offset="50%" style="stop-color:#7B1FA2"/>
+      <stop offset="100%" style="stop-color:#4A148C"/>
+    </linearGradient>
+  </defs>
+  <title>Gems / Balls token</title>
+  <g transform="translate(40, 40)"><circle r="28" fill="url(#tRed)"/><circle r="20" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/><text y="6" text-anchor="middle" font-size="12" fill="#fff">R</text></g>
+  <g transform="translate(120, 40)"><circle r="28" fill="url(#tBlue)"/><circle r="20" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/><text y="6" text-anchor="middle" font-size="12" fill="#fff">B</text></g>
+  <g transform="translate(200, 40)"><circle r="28" fill="url(#tGreen)"/><circle r="20" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/><text y="6" text-anchor="middle" font-size="12" fill="#fff">G</text></g>
+  <g transform="translate(280, 40)"><circle r="28" fill="url(#tWhite)"/><circle r="20" fill="none" stroke="#90A4AE" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/><text y="6" text-anchor="middle" font-size="12" fill="#37474F">W</text></g>
+  <g transform="translate(360, 40)"><circle r="28" fill="url(#tPurple)"/><circle r="20" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/><text y="6" text-anchor="middle" font-size="12" fill="#fff">P</text></g>
+</svg>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" width="200" height="280">
+  <defs>
+    <linearGradient id="nobleBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFDE7"/>
+      <stop offset="50%" style="stop-color:#FFF9C4"/>
+      <stop offset="100%" style="stop-color:#FFEE58"/>
+    </linearGradient>
+    <linearGradient id="nbR" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF5252"/>
+      <stop offset="50%" style="stop-color:#E53935"/>
+      <stop offset="100%" style="stop-color:#B71C1C"/>
+    </linearGradient>
+    <linearGradient id="nbB" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#42A5F5"/>
+      <stop offset="50%" style="stop-color:#1E88E5"/>
+      <stop offset="100%" style="stop-color:#0D47A1"/>
+    </linearGradient>
+    <linearGradient id="nbG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#66BB6A"/>
+      <stop offset="50%" style="stop-color:#43A047"/>
+      <stop offset="100%" style="stop-color:#1B5E20"/>
+    </linearGradient>
+    <filter id="nobleShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect x="4" y="4" width="192" height="272" rx="12" ry="12" fill="url(#nobleBg)" stroke="#F9A825" stroke-width="2.5" filter="url(#nobleShadow)"/>
+  <text x="100" y="32" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#F57F17">Legend</text>
+  <text x="100" y="72" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#5D4037">Require</text>
+  <g transform="translate(70, 95)">
+    <circle cx="0" cy="0" r="20" fill="url(#nbR)"/>
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/>
+    <text x="0" y="6" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="#fff">4</text>
+  </g>
+  <g transform="translate(130, 95)">
+    <circle cx="0" cy="0" r="20" fill="url(#nbB)"/>
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2" opacity="0.8"/>
+    <text x="0" y="6" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="#fff">4</text>
+  </g>
+  <circle cx="100" cy="165" r="50" fill="none" stroke="#F9A825" stroke-width="3" opacity="0.6"/>
+  <circle cx="100" cy="165" r="35" fill="none" stroke="#F9A825" stroke-width="2" opacity="0.4"/>
+  <text x="100" y="172" text-anchor="middle" font-family="sans-serif" font-size="28" font-weight="bold" fill="#F57F17">*</text>
+  <circle cx="165" cy="28" r="18" fill="#FFC107" stroke="#F57F17" stroke-width="2"/>
+  <text x="165" y="34" text-anchor="middle" font-family="sans-serif" font-size="20" font-weight="bold" fill="#3E2723">3</text>
+</svg>
