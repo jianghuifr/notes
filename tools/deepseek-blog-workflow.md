@@ -75,6 +75,13 @@ tags:
    > 本文基于与 DeepSeek 的一次对话整理，原始对话：<share_url>
    ```
 
+5. **敏感信息脱敏**。对话中的真实凭证、IP、主机名、数据库地址、实例 ID 等信息，在博客中必须做伪装。替换原则：保留语义可读性，抹去可追溯性。例如：
+   - DB 地址 `postgres18ceec96c315.rds-pg.ivolces.com` → 改写为 `pg-xxx.rds-pg.example.com` 或 `postgres-xxxx.rds.xxx.com`
+   - 内网 IP `10.246.0.10` → 保持 `10.x.x.10` 或保留网段但改后两段
+   - Node 主机名 `volc-pic-cpu-b-0004` → 改为 `node-xxxx`
+   - Namespace `vla-vla-manual-annotation-prod` → 泛化为 `<your-ns>` 或 `prod-ns`
+   核心：K8s 概念、命令、排查思路原样保留，但具体实体名称一律替换。
+
 ### 4. 本地验证（可选但推荐）
 
 如果 `pnpm run server` 已在运行，Hexo 会自动热更新。检查 http://localhost:4000/notes/YYYY/MM/DD/<slug>/ 能打开，mermaid 图能渲染。

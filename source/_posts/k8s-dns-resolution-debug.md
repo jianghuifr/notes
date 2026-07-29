@@ -40,11 +40,11 @@ kubelet 只提取 `nameserver`、`search`、`options` 三个字段，然后按 `
 
 ```
 # 宿主机
-nameserver 172.31.7.110
-nameserver 100.96.0.2
+nameserver 172.x.x.110
+nameserver 100.x.x.2
 
 # Pod（dnsPolicy: ClusterFirst）
-nameserver 10.246.0.10          ← 被覆盖为集群 CoreDNS IP
+nameserver 10.x.x.10          ← 被覆盖为集群 CoreDNS IP
 search <ns>.svc.cluster.local svc.cluster.local cluster.local
 options ndots:5
 ```
@@ -69,7 +69,7 @@ options ndots:5
 以火山引擎 RDS 地址为例：
 
 ```
-postgres18ceec96c315.rds-pg.ivolces.com
+pg-xxx.rds-pg.example.com
         1             2       3      4   ← 4 个点，小于 5
 ```
 
@@ -130,7 +130,7 @@ kubectl get pod <pod> -o yaml | grep dnsPolicy
 # dnsPolicy: ClusterFirst
 
 kubectl exec <pod> -- cat /etc/resolv.conf
-# nameserver 10.246.0.10
+# nameserver 10.x.x.10
 # search <ns>.svc.cluster.local svc.cluster.local cluster.local
 # options ndots:5
 ```
