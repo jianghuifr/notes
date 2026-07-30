@@ -14,7 +14,7 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
   return str.replace('</body>', mermaidScript + '\n</body>');
 }, 9);
 
-// Remove categories and archives directories after all files are written
+// Remove categories and archives directories, and replace root with redirect to /posts/
 const fs = require('fs');
 const path = require('path');
 hexo.on('exit', function () {
@@ -24,4 +24,16 @@ hexo.on('exit', function () {
       fs.rmSync(dirPath, { recursive: true, force: true });
     }
   });
+  // Create root index.html as redirect to /posts/
+  const indexPath = path.join(hexo.public_dir, 'index.html');
+  fs.writeFileSync(indexPath, `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=/notes/posts/">
+  <script>location.replace('/notes/posts/');</script>
+  <title>笔记</title>
+</head>
+<body></body>
+</html>`);
 });
