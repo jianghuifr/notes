@@ -15,7 +15,14 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
     try {
       var obj = JSON.parse(raw);
       if (obj && (obj.series || obj.xAxis || obj.yAxis || obj.radar || obj.geo || obj.visualMap)) {
-        return '<div class="echarts">' + raw.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>';
+        return '<div class="sea-code-block" data-diagram="echarts">'
+    + '<div class="sea-code-title"><span class="sea-code-lang">echarts</span>'
+    + '<div class="sea-code-actions"><button class="sea-code-btn diagram-toggle" title="\u6e90\u7801/\u56fe\u8868">'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>'
+    + '</button></div></div>'
+    + '<div class="sea-code-body">' + match
+    + '<div class="echarts">' + raw.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>'
+    + '</div></div>';
       }
     } catch(e) {}
     return match;
@@ -26,7 +33,7 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
 hexo.extend.filter.register('after_render:html', function (str, data) {
   if (!data.page || !data.page.__post) return str;
   if (!str.includes('class="mermaid"') && !str.includes('pre class="mermaid"')) return str;
-  var mermaidScript = '\n<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>\n<script>\n  mermaid.initialize({\n    startOnLoad: true,\n    theme: (document.documentElement.getAttribute("data-theme") === "dark") ? "dark" : "default",\n    securityLevel: "loose"\n  });\n</script>';
+  var mermaidScript = '\n<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>\n<script>\n  document.querySelectorAll(\'.mermaid\').forEach(function(el){\n    var wrap=document.createElement(\'div\');\n    wrap.className=\'sea-code-block\';\n    wrap.setAttribute(\'data-diagram\',\'mermaid\');\n    wrap.innerHTML=\'<div class="sea-code-title"><span class="sea-code-lang">mermaid</span><div class="sea-code-actions"><button class="sea-code-btn diagram-toggle" title="\u6e90\u7801/\u56fe\u8868"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></button></div></div><div class="sea-code-body"><pre style="display:none;padding:14px 16px;margin:0;background:transparent;font-family:SF Mono,Cascadia Code,Fira Code,JetBrains Mono,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;color:inherit;border:none;border-radius:0;overflow:auto"></pre></div>\';\n    wrap.querySelector(\'pre\').textContent=el.textContent;\n    el.parentNode.insertBefore(wrap,el);\n    wrap.querySelector(\'.sea-code-body\').appendChild(el);\n  });\n  mermaid.initialize({\n    startOnLoad: true,\n    theme: (document.documentElement.getAttribute("data-theme") === "dark") ? "dark" : "default",\n    securityLevel: "loose"\n  });\n</script>';
   return str.replace('</body>', mermaidScript + '\n</body>');
 }, 9);
 
