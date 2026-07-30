@@ -105,7 +105,7 @@
     // Hidden pre for source
     var srcPre = document.createElement("pre");
     srcPre.style.cssText = "padding:14px 16px;margin:0;background:transparent;font-family:SF Mono,Cascadia Code,Fira Code,JetBrains Mono,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;color:inherit;border:none;border-radius:0;overflow:auto";
-    srcPre.textContent = el.textContent;
+    srcPre.textContent = el.getAttribute("data-source") || el.textContent;
     body.appendChild(srcPre);
 
     el.parentNode.insertBefore(wrap, el);
