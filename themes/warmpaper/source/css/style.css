@@ -558,6 +558,7 @@ img {
   position: relative;
   max-width: var(--content-width);
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 /* --- Post Content Typography --- */
@@ -565,6 +566,8 @@ img {
   font-family: var(--font-serif);
   font-size: 1.06rem;
   line-height: 1.85;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .post-content h1,
