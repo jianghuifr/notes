@@ -252,17 +252,24 @@ const codeBlockJS = `
       });
     };
 
-    // Night mode
+    // Night mode (default dark, remembered in localStorage)
     var darkBtn = document.createElement('button');
     darkBtn.className = 'sea-code-btn';
     darkBtn.title = '切换主题';
-    var isCodeDark = false;
+    var STORAGE_KEY = 'code-block-theme';
+    var isCodeDark = true; // default dark
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'light') isCodeDark = false;
+    } catch(e) {}
     var updateDarkIcon = function() { darkBtn.innerHTML = isCodeDark ? svgSun : svgMoon; };
     updateDarkIcon();
+    if (isCodeDark) wrapper.classList.add('code-theme-dark');
     darkBtn.onclick = function() {
       isCodeDark = !isCodeDark;
       wrapper.classList.toggle('code-theme-dark', isCodeDark);
       updateDarkIcon();
+      try { localStorage.setItem(STORAGE_KEY, isCodeDark ? 'dark' : 'light'); } catch(e) {}
     };
 
     // Collapse
