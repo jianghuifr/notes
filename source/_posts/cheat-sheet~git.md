@@ -9,8 +9,8 @@ tags:
 ## 初始化
 
 ```bash
-EMAIL=jianghuifr@outlook.com
-USERNAME=jianghui
+EMAIL=your-email@example.com
+USERNAME=your-username
 
 # 生成ssh密钥
 ssh-keygen -t rsa -C $EMAIL

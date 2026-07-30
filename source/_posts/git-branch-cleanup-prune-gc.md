@@ -28,13 +28,13 @@ flowchart TD
 
 ## 实操：一次完整的仓库清理
 
-以下是在 `picasso-job-agent` 仓库的实际操作过程。
+以下是在 `my-project` 仓库的实际操作过程。
 
 **初始状态**——远程有两个分支已合并删除，但本地还残留它们的引用：
 
 ```bash
 $ git branch
-  bump-picasso-go
+  bump-deps
   feat-error-code-line-a
   fix-duplicate-gomod
   fix-ja-namespace-dedup
@@ -46,18 +46,18 @@ $ git branch
 ```bash
 $ git remote prune origin
 Pruning origin
-URL: ssh://git.example.com/ezone/picasso-job-agent.git
- * [pruned] origin/bump-picasso-go
+URL: ssh://git.example.com/my-org/my-project.git
+ * [pruned] origin/bump-deps
  * [pruned] origin/feat-error-code-line-a
 ```
 
-这一步删掉了 `remotes/origin/bump-picasso-go` 和 `remotes/origin/feat-error-code-line-a` 两个引用。注意：**本地分支仍然存在**——`git branch` 输出不变。
+这一步删掉了 `remotes/origin/bump-deps` 和 `remotes/origin/feat-error-code-line-a` 两个引用。注意：**本地分支仍然存在**——`git branch` 输出不变。
 
 验证远程引用已清理：
 
 ```bash
 $ git branch -a
-  bump-picasso-go
+  bump-deps
   feat-error-code-line-a
   fix-duplicate-gomod
   fix-ja-namespace-dedup
@@ -84,7 +84,7 @@ Compressing objects: 100% (302/302), done.
 
 ```bash
 $ git branch | grep -v "master" | grep -v "\*" | xargs git branch -D
-Deleted branch bump-picasso-go (was 7860aed).
+Deleted branch bump-deps (was 7860aed).
 Deleted branch feat-error-code-line-a (was e7a95d1).
 Deleted branch fix-duplicate-gomod (was a7aed62).
 Deleted branch fix-ja-namespace-dedup (was 346485a).

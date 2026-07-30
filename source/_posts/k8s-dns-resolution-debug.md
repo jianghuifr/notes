@@ -66,7 +66,7 @@ options ndots:5
 
 默认 `ndots:5` 意味着：只要域名点数不到 5，就先走一轮 search 拼接。对于 K8s 内部 Service 短名称（如 `my-service`，0 个点），这很方便。但对外部域名，这是灾难。
 
-以火山引擎 RDS 地址为例：
+以某云厂商 RDS 地址为例：
 
 ```
 pg-xxx.rds-pg.example.com
@@ -105,7 +105,7 @@ spec:
 
 ## 线上案例：追踪 SERVFAIL
 
-真实环境：火山引擎集群，`dnsPolicy: ClusterFirst`，DB 地址如上。Prometheus 监控到 CoreDNS 的 `SERVFAIL` 在 24 小时内从 2 涨到 28。
+真实环境：某云厂商集群，`dnsPolicy: ClusterFirst`，DB 地址如上。Prometheus 监控到 CoreDNS 的 `SERVFAIL` 在 24 小时内从 2 涨到 28。
 
 排查过程：
 
@@ -118,7 +118,7 @@ flowchart TD
     E --> F[查 CoreDNS SERVFAIL 趋势]
     F --> G[确认 SERVFAIL 在上涨]
     G --> H{上游 DNS 限流?}
-    H -->|大概率| I[火山 RDS DNS 对单 IP 有 QPS 限制]
+    H -->|大概率| I[云厂商 RDS DNS 对单 IP 有 QPS 限制]
     C --> J[改 ndots:1 削减 75% 查询量]
     I --> K[CoreDNS 加 cache 60]
 ```
@@ -137,13 +137,13 @@ kubectl exec <pod> -- cat /etc/resolv.conf
 
 第二步：排除 conntrack。在所有 Node 上跑了 `dmesg -T | grep "nf_conntrack: table full"`，全部干净 —— 内核层面没有丢包。
 
-第三步：确认上游 DNS 问题。CoreDNS 日志里有大量上游返回的 SERVFAIL，说明火山引擎内网 DNS 在压力下开始拒绝请求。而这压力的一部分来源就是 `ndots:5` 产生的 3 倍无效查询。
+第三步：确认上游 DNS 问题。CoreDNS 日志里有大量上游返回的 SERVFAIL，说明某云厂商内网 DNS 在压力下开始拒绝请求。而这压力的一部分来源就是 `ndots:5` 产生的 3 倍无效查询。
 
 ## 修复方案
 
 1. **业务 Pod 加 `dnsConfig: ndots:1`**：DNS 查询量直接削减 75%，CoreDNS 和上游 DNS 压力同步降低
 2. **CoreDNS 加 `cache 60`**：即使上游偶尔 SERVFAIL，缓存命中直接返回 IP
-3. **如果问题持续**：联系火山引擎确认 RDS DNS 的 QPS 限流策略，提高阈值或改用 RDS 固定 VIP
+3. **如果问题持续**：联系某云厂商确认 RDS DNS 的 QPS 限流策略，提高阈值或改用 RDS 固定 VIP
 
 修完后观察 24 小时，`SERVFAIL` 从 28 回落。
 
