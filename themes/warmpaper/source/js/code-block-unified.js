@@ -2,7 +2,16 @@
 (function() {
   var STORAGE_KEY = "code-block-theme";
   var isDark = true;
-  try { if (localStorage.getItem(STORAGE_KEY) === "light") isDark = false; } catch(e) {}
+  var saved = null;
+  try { saved = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+  if (saved === "light") {
+    isDark = false;
+  } else if (saved === null) {
+    // No saved preference: follow site theme
+    isDark = (document.documentElement.getAttribute("data-theme") === "dark");
+  } else {
+    isDark = (saved !== "light");
+  }
 
   var svgCopy = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M832 64a96 96 0 0 1 96 96V640a96 96 0 0 1-96 96h-128v128A96 96 0 0 1 608 960H192a96 96 0 0 1-96-96V384A96 96 0 0 1 192 288h128v-128A96 96 0 0 1 416 64H832zM192 352a32 32 0 0 0-32 32v480a32 32 0 0 0 32 32h416a32 32 0 0 0 32-32V384a32 32 0 0 0-32-32H192zM416 128a32 32 0 0 0-32 32v128h224A96 96 0 0 1 704 384v288h128a32 32 0 0 0 32-32V160A32 32 0 0 0 832 128H416z"/></svg>';
   var svgSun = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 320c-106.048 0-192 85.952-192 192s85.952 192 192 192 192-85.952 192-192-85.952-192-192-192zM512 256c141.376 0 256 114.624 256 256s-114.624 256-256 256-256-114.624-256-256 114.624-256 256-256zM480 128V32h64v96h-64zM480 992v-96h64v96h-64zM928 480h96v64h-96v-64zM0 480h96v64H0v-64zM762.368 198.656l67.84-67.84 45.248 45.248-67.84 67.84-45.248-45.248zM145.696 847.936l67.84-67.84 45.248 45.248-67.84 67.84-45.248-45.248zM758.304 829.76l45.248-45.248 67.84 67.84-45.248 45.248-67.84-67.84zM149.76 171.616l45.248-45.248 67.84 67.84-45.248 45.248-67.84-67.84z"/></svg>';
@@ -20,6 +29,30 @@
         b.innerHTML = dark ? svgSun : svgMoon;
       }
     });
+    // Re-render mermaid diagrams with appropriate theme
+    if (typeof mermaid !== "undefined") {
+      try {
+        document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
+          var src = el.getAttribute("data-source");
+          if (src) {
+            el.removeAttribute("data-processed");
+            el.innerHTML = "";
+            el.textContent = src;
+          }
+        });
+        mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
+        mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
+        // Restore data-source after re-render
+        setTimeout(function() {
+          document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
+            var src = el.getAttribute("data-source");
+            if (src && !el.textContent.trim()) {
+              el.textContent = src;
+            }
+          });
+        }, 500);
+      } catch(e) {}
+    }
   }
 
   function buildActions(diagramType) {
