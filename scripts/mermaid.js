@@ -3,14 +3,28 @@
 // ============================================
 
 // --- ECharts: convert ```echarts fenced blocks to <div class="echarts"> ---
-hexo.extend.filter.register('before_post_render', function (data) {
-  if (!data.content) return data;
-  // Replace ```echarts ... ``` with <div class="echarts">...</div>
-  data.content = data.content.replace(/```echarts\s*\n([\s\S]*?)```/g, function (match, code) {
-    return '<div class="echarts">\n' + code.trim() + '\n</div>';
+hexo.extend.filter.register('after_render:html', function (str, data) {
+  // Find plaintext code blocks that contain echarts JSON configs
+  // Match: <figure class="highlight plaintext">...JSON...</figure>
+  return str.replace(/<figure class="highlight plaintext">\s*<table>\s*<tr>\s*<td class="gutter">[\s\S]*?<\/td>\s*<td class="code"><pre>(.*?)<\/pre><\/td>\s*<\/tr>\s*<\/table>\s*<\/figure>/g, function (match, code) {
+    // Decode HTML entities to raw text
+    var raw = code
+      .replace(/&#123;/g, '{').replace(/&#125;/g, '}')
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/<span[^>]*>/g, '').replace(/<\/span>/g, '')
+      .replace(/<br>/g, '\n')
+      .trim();
+    // Only convert if it's valid JSON with echarts indicators
+    try {
+      var obj = JSON.parse(raw);
+      if (obj && (obj.series || obj.xAxis || obj.yAxis || obj.radar || obj.geo || obj.visualMap)) {
+        return '<div class="echarts">' + raw.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>';
+      }
+    } catch(e) {}
+    return match;
   });
-  return data;
-});
+}, 5);
 
 // --- Mermaid ---
 hexo.extend.filter.register('after_render:html', function (str, data) {
