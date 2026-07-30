@@ -33,7 +33,7 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
 hexo.extend.filter.register('after_render:html', function (str, data) {
   if (!data.page || !data.page.__post) return str;
   if (!str.includes('class="mermaid"') && !str.includes('pre class="mermaid"')) return str;
-  var mermaidScript = '\n<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>\n<script>\n  document.querySelectorAll(\'.mermaid\').forEach(function(el) { el.setAttribute(\'data-source\', el.textContent); });\n  mermaid.initialize({\n    startOnLoad: true,\n    theme: (document.documentElement.getAttribute("data-theme") === "dark") ? "dark" : "default",\n    securityLevel: "loose"\n  });\n</script>';
+  var mermaidScript = '\n<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>\n<script>\n  document.querySelectorAll(\'.mermaid\').forEach(function(el) { el.setAttribute(\'data-source\', el.textContent); });\n  (function(){\n    var t = document.documentElement.getAttribute("data-theme");\n    if (!t) { try { t = localStorage.getItem("theme"); } catch(e) {} }\n    if (!t) { t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }\n    mermaid.initialize({\n      startOnLoad: true,\n      theme: (t === "dark") ? "dark" : "default",\n      securityLevel: "loose"\n    });\n  })();\n</script>';
   return str.replace('</body>', mermaidScript + '\n</body>');
 }, 9);
 // --- ECharts renderer ---
@@ -67,4 +67,3 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
   var themeSync = '\n<script src="' + hexo.config.root + 'js/code-block-unified.js"></script>';
   return str.replace('</body>', themeSync + '\n</body>');
 }, 10);
-

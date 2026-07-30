@@ -8,7 +8,15 @@
     isDark = false;
   } else if (saved === null) {
     // No saved preference: follow site theme
-    isDark = (document.documentElement.getAttribute("data-theme") === "dark");
+    // Warmpaper doesn't set data-theme on initial load; check localStorage + OS too
+    var siteTheme = document.documentElement.getAttribute("data-theme");
+    if (!siteTheme) {
+      try { siteTheme = localStorage.getItem("theme"); } catch(e) {}
+    }
+    if (!siteTheme) {
+      siteTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    isDark = (siteTheme === "dark");
   } else {
     isDark = (saved !== "light");
   }
