@@ -2,6 +2,16 @@
 // Warmpaper theme extensions
 // ============================================
 
+// --- ECharts: convert ```echarts fenced blocks to <div class="echarts"> ---
+hexo.extend.filter.register('before_post_render', function (data) {
+  if (!data.content) return data;
+  // Replace ```echarts ... ``` with <div class="echarts">...</div>
+  data.content = data.content.replace(/```echarts\s*\n([\s\S]*?)```/g, function (match, code) {
+    return '<div class="echarts">\n' + code.trim() + '\n</div>';
+  });
+  return data;
+});
+
 // --- Mermaid ---
 hexo.extend.filter.register('after_render:html', function (str, data) {
   if (!data.page || !data.page.__post) return str;
