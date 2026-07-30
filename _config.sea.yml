@@ -19,8 +19,6 @@ articles:
 
 # 菜单栏
 menu:
-  - name: 归档
-    url: /archives/
   - name: 标签
     url: /tags/
 

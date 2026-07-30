@@ -14,12 +14,14 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
   return str.replace('</body>', mermaidScript + '\n</body>');
 }, 9);
 
-// Remove categories directory after all files are written
+// Remove categories and archives directories after all files are written
 const fs = require('fs');
 const path = require('path');
 hexo.on('exit', function () {
-  const catsDir = path.join(hexo.public_dir, 'categories');
-  if (fs.existsSync(catsDir)) {
-    fs.rmSync(catsDir, { recursive: true, force: true });
-  }
+  ['categories', 'archives'].forEach(function (dir) {
+    const dirPath = path.join(hexo.public_dir, dir);
+    if (fs.existsSync(dirPath)) {
+      fs.rmSync(dirPath, { recursive: true, force: true });
+    }
+  });
 });
