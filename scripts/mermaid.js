@@ -63,10 +63,9 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
   }
   return out;
 }, 8);
-// --- Unified code block theme (global toggle) ---
 hexo.extend.filter.register('after_render:html', function (str, data) {
   if (!str.includes('figure class=\"highlight') && !str.includes('class=\"mermaid\"') && !str.includes('class=\"echarts\"')) return str;
-  var themeSync = '\n<script>\n(function() {\n  var STORAGE_KEY = "code-block-theme";\n  var isDark = true;\n  try { if (localStorage.getItem(STORAGE_KEY) === "light") isDark = false; } catch(e) {}\n\n  function syncAll(dark) {\n    document.querySelectorAll(".sea-code-block").forEach(function(b) {\n      b.classList.toggle("code-theme-dark", dark);\n    });\n  }\n\n  // On load, sync all blocks (covers mermaid/echarts created after codeBlockJS)\n  setTimeout(function() {\n    syncAll(isDark);\n    // Hijack all night-mode buttons to toggle globally\n    document.querySelectorAll(".sea-code-btn").forEach(function(btn) {\n      if (btn.title === "\\u5207\\u6362\\u4e3b\\u9898") {\n        btn.onclick = function() {\n          isDark = !isDark;\n          syncAll(isDark);\n          try { localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light"); } catch(e) {}\n        };\n      }\n    });\n  }, 300);\n})();\n</script>';
+  var themeSync = '\n<script src="/js/code-block-unified.js"></script>';
   return str.replace('</body>', themeSync + '\n</body>');
 }, 10);
 
