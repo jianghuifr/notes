@@ -65,7 +65,7 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
 }, 8);
 hexo.extend.filter.register('after_render:html', function (str, data) {
   if (!str.includes('figure class=\"highlight') && !str.includes('class=\"mermaid\"') && !str.includes('class=\"echarts\"')) return str;
-  var themeSync = '\n<script src="/js/code-block-unified.js"></script>';
+  var themeSync = '\n<script src="' + hexo.config.root + 'js/code-block-unified.js"></script>';
   return str.replace('</body>', themeSync + '\n</body>');
 }, 10);
 
