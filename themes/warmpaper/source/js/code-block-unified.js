@@ -199,5 +199,27 @@
         };
       }
     });
+
+    // Watch for site theme changes — re-sync code blocks if user hasn't set manual preference
+    if (window.MutationObserver) {
+      var observer = new MutationObserver(function() {
+        var manual = null;
+        try { manual = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+        if (manual) return; // user manually set preference, don't override
+        var t = document.documentElement.getAttribute("data-theme");
+        if (!t) {
+          try { t = localStorage.getItem("theme"); } catch(e) {}
+        }
+        if (!t) {
+          t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        var shouldDark = (t === "dark");
+        if (shouldDark !== isDark) {
+          isDark = shouldDark;
+          syncAll(isDark);
+        }
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    }
   }, 200);
 })();
