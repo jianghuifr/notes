@@ -1,4 +1,4 @@
-// Unified code block interactions — global theme toggle + diagram block buttons
+// Unified code block interactions — global theme toggle + diagram block wrapping & buttons
 (function() {
   var STORAGE_KEY = "code-block-theme";
   var isDark = true;
@@ -9,6 +9,7 @@
   var svgMoon = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M517.568 128c-212.096 0-384 171.904-384 384s171.904 384 384 384c70.976 0 137.472-19.2 194.048-52.736C615.84 893.76 512 779.456 512 640c0-159.744 130.944-291.328 286.528-314.24C734.976 194.496 634.688 128 517.568 128z"/></svg>';
   var svgChevronUp = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 345.376L233.376 624l-45.248-45.248L512 254.88l323.872 323.872L790.624 624 512 345.376z"/></svg>';
   var svgChevronDown = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 678.624L233.376 400l-45.248 45.248L512 769.12l323.872-323.872L790.624 400 512 678.624z"/></svg>';
+  var svgDiagram = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
 
   function syncAll(dark) {
     document.querySelectorAll(".sea-code-block").forEach(function(b) {
@@ -21,57 +22,131 @@
     });
   }
 
-  function injectDiagramButtons(block) {
-    var actions = block.querySelector(".sea-code-actions");
-    if (!actions) return;
+  function buildActions(diagramType) {
+    // diagramType: "mermaid" or "echarts"
+    var hasToggle = diagramType !== ""; // mermaid and echarts both need source toggle
 
-    // Copy button
-    if (!actions.querySelector('[title="\u590d\u5236"]')) {
-      var cb = document.createElement("button");
-      cb.className = "sea-code-btn";
-      cb.title = "\u590d\u5236";
-      cb.innerHTML = svgCopy;
-      cb.onclick = function() {
-        var src = block.querySelector(".sea-code-body pre") || block.querySelector(".sea-code-body .code") || block.querySelector(".sea-code-body figure");
-        var text = src ? src.textContent : "";
-        navigator.clipboard.writeText(text).then(function() {
-          cb.classList.add("copied");
-          setTimeout(function() { cb.classList.remove("copied"); }, 1500);
-        });
+    var actions = document.createElement("div");
+    actions.className = "sea-code-actions";
+
+    // Copy
+    var cb = document.createElement("button");
+    cb.className = "sea-code-btn";
+    cb.title = "\u590d\u5236";
+    cb.innerHTML = svgCopy;
+    cb.onclick = function() {
+      var block = cb.closest(".sea-code-block");
+      var src = block.querySelector(".sea-code-body pre") || block.querySelector(".sea-code-body .code") || block.querySelector(".sea-code-body figure");
+      var text = src ? src.textContent : "";
+      navigator.clipboard.writeText(text).then(function() {
+        cb.classList.add("copied");
+        setTimeout(function() { cb.classList.remove("copied"); }, 1500);
+      });
+    };
+    actions.appendChild(cb);
+
+    // Theme
+    var tb = document.createElement("button");
+    tb.className = "sea-code-btn";
+    tb.title = "\u5207\u6362\u4e3b\u9898";
+    tb.innerHTML = isDark ? svgSun : svgMoon;
+    actions.appendChild(tb);
+
+    // Collapse
+    var fb = document.createElement("button");
+    fb.className = "sea-code-btn";
+    fb.title = "\u6298\u53e0";
+    fb.innerHTML = svgChevronUp;
+    fb.onclick = function() {
+      var block = fb.closest(".sea-code-block");
+      block.classList.toggle("collapsed");
+      fb.innerHTML = block.classList.contains("collapsed") ? svgChevronDown : svgChevronUp;
+    };
+    actions.appendChild(fb);
+
+    // Source/Diagram toggle (mermaid and echarts)
+    if (hasToggle) {
+      var db = document.createElement("button");
+      db.className = "sea-code-btn diagram-toggle";
+      db.title = "\u6e90\u7801/\u56fe\u8868";
+      db.innerHTML = svgDiagram;
+      db.onclick = function() {
+        var block = db.closest(".sea-code-block");
+        block.classList.toggle("show-raw");
+        if (!block.classList.contains("show-raw")) {
+          var ec = block.querySelector(".echarts");
+          if (ec && ec._echarts_instance) ec._echarts_instance.resize();
+        }
       };
-      actions.insertBefore(cb, actions.firstChild);
+      actions.appendChild(db);
     }
 
-    // Theme toggle button
-    if (!actions.querySelector('[title="\u5207\u6362\u4e3b\u9898"]')) {
-      var tb = document.createElement("button");
-      tb.className = "sea-code-btn";
-      tb.title = "\u5207\u6362\u4e3b\u9898";
-      tb.innerHTML = isDark ? svgSun : svgMoon;
-      var diagBtn = actions.querySelector(".diagram-toggle");
-      actions.insertBefore(tb, diagBtn || null);
-    }
+    return actions;
+  }
 
-    // Collapse button
-    if (!actions.querySelector('[title="\u6298\u53e0"]')) {
-      var fb = document.createElement("button");
-      fb.className = "sea-code-btn";
-      fb.title = "\u6298\u53e0";
-      fb.innerHTML = svgChevronUp;
-      fb.onclick = function() {
-        block.classList.toggle("collapsed");
-        fb.innerHTML = block.classList.contains("collapsed") ? svgChevronDown : svgChevronUp;
-      };
-      var diagBtn = actions.querySelector(".diagram-toggle");
-      actions.insertBefore(fb, diagBtn || null);
+  function wrapMermaid(el) {
+    if (el.closest(".sea-code-block")) return;
+
+    var wrap = document.createElement("div");
+    wrap.className = "sea-code-block";
+    wrap.setAttribute("data-diagram", "mermaid");
+
+    var title = document.createElement("div");
+    title.className = "sea-code-title";
+    var langSpan = document.createElement("span");
+    langSpan.className = "sea-code-lang";
+    langSpan.textContent = "mermaid";
+    title.appendChild(langSpan);
+    title.appendChild(buildActions("mermaid"));
+
+    var body = document.createElement("div");
+    body.className = "sea-code-body";
+
+    // Hidden pre for source
+    var srcPre = document.createElement("pre");
+    srcPre.style.cssText = "display:none;padding:14px 16px;margin:0;background:transparent;font-family:SF Mono,Cascadia Code,Fira Code,JetBrains Mono,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;color:inherit;border:none;border-radius:0;overflow:auto";
+    srcPre.textContent = el.textContent;
+    body.appendChild(srcPre);
+
+    el.parentNode.insertBefore(wrap, el);
+    body.appendChild(el);
+    wrap.appendChild(title);
+    wrap.appendChild(body);
+
+    if (isDark) wrap.classList.add("code-theme-dark");
+  }
+
+  function wrapBareMermaids() {
+    // Wrap bare .mermaid elements that aren't already inside .sea-code-block
+    document.querySelectorAll(".mermaid").forEach(function(el) {
+      if (!el.closest(".sea-code-block")) {
+        wrapMermaid(el);
+      }
+    });
+
+    // Trigger mermaid re-render for newly wrapped elements
+    if (typeof mermaid !== "undefined" && document.querySelector(".mermaid:not(.sea-code-block .mermaid)") === null) {
+      // All mermaid elements are now wrapped; run mermaid again if needed
+      try { mermaid.run({ querySelector: ".sea-code-block .mermaid" }); } catch(e) {}
     }
   }
 
   setTimeout(function() {
     syncAll(isDark);
 
-    // Inject copy/collapse/theme buttons into diagram blocks (mermaid, echarts)
-    document.querySelectorAll(".sea-code-block[data-diagram]").forEach(injectDiagramButtons);
+    // Wrap bare mermaid elements
+    wrapBareMermaids();
+
+    // Inject buttons into echarts blocks (already wrapped by hexo converter)
+    document.querySelectorAll('.sea-code-block[data-diagram="echarts"]').forEach(function(block) {
+      var actions = block.querySelector(".sea-code-actions");
+      if (!actions || actions.children.length > 1) return; // already injected
+      // Replace existing actions with full set
+      var title = block.querySelector(".sea-code-title");
+      if (title && actions) {
+        title.replaceChild(buildActions("echarts"), actions);
+      }
+    });
 
     // Hijack all theme toggle buttons — global toggle
     document.querySelectorAll(".sea-code-btn").forEach(function(btn) {
@@ -83,5 +158,5 @@
         };
       }
     });
-  }, 300);
+  }, 200);
 })();
