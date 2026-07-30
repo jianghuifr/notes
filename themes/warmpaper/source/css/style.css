@@ -936,11 +936,11 @@ figure.highlight .token.deleted {
 .sea-code-block[data-diagram] .echarts,
 .sea-code-block[data-diagram] .mermaid { display: block; }
 .sea-code-block[data-diagram] figure.highlight,
-.sea-code-block[data-diagram] .sea-code-body > pre { display: none; }
+.sea-code-block[data-diagram] .sea-code-body > pre:not(.mermaid) { display: none; }
 .sea-code-block[data-diagram].show-raw .echarts,
 .sea-code-block[data-diagram].show-raw .mermaid { display: none; }
 .sea-code-block[data-diagram].show-raw figure.highlight,
-.sea-code-block[data-diagram].show-raw .sea-code-body > pre { display: block; }
+.sea-code-block[data-diagram].show-raw .sea-code-body > pre:not(.mermaid) { display: block; }
 
 /* --- TOC Sidebar --- */
 .toc-sidebar {
