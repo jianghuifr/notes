@@ -108,6 +108,32 @@
   function initBlocks() {
     setMode(isDark);
 
+    // Wrap regular code blocks (non-diagram) in .sea-code-block with title bar
+    document.querySelectorAll("figure.highlight").forEach(function(fig) {
+      if (fig.closest(".sea-code-block")) return;
+      var lang = "";
+      fig.classList.forEach(function(c) { if (c !== "highlight") lang = c; });
+
+      var wrapper = document.createElement("div");
+      wrapper.className = "sea-code-block";
+      if (isDark) wrapper.classList.add("code-theme-dark");
+
+      var title = document.createElement("div");
+      title.className = "sea-code-title";
+      var langSpan = document.createElement("span");
+      langSpan.className = "sea-code-lang";
+      langSpan.textContent = lang;
+      title.appendChild(langSpan);
+      title.appendChild(buildActions(""));
+
+      var body = document.createElement("div");
+      body.className = "sea-code-body";
+      fig.parentNode.insertBefore(wrapper, fig);
+      body.appendChild(fig);
+      wrapper.appendChild(title);
+      wrapper.appendChild(body);
+    });
+
     document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] .sea-code-title').forEach(function(title) {
       if (title.querySelector(".sea-code-actions")) return;
       title.appendChild(buildActions("mermaid"));
