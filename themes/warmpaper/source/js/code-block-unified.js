@@ -149,23 +149,24 @@
     var blocks = document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]');
     if (!blocks.length) return;
 
-    // Extract source text from figure.highlight (shared for both renders)
-    var srcMap = {};
+    // Store source on each block via data attribute (object keys coerce DOM→"[object HTMLDivElement]")
     blocks.forEach(function(block) {
       var codePre = block.querySelector(".sea-code-body figure.highlight .code pre");
       var lines = codePre ? codePre.querySelectorAll(".line") : null;
       var src = "";
       if (lines) { lines.forEach(function(l) { src += l.textContent + "\n"; }); }
-      srcMap[block] = src;
+      block.setAttribute("data-mermaid-src", src);
     });
 
     function renderTheme(dark, cb) {
       var theme = dark ? "dark" : "default";
       var mode = dark ? "dark" : "light";
       blocks.forEach(function(block) {
-        var src = srcMap[block];
+        var src = block.getAttribute("data-mermaid-src");
         var el = block.querySelector('.sea-code-diagrams pre.mermaid[mode="' + mode + '"]');
         if (!el || !src) return;
+        // Force visible during render — hidden elements break mermaid layout
+        el.style.display = "";
         el.removeAttribute("data-processed");
         el.innerHTML = "";
         el.textContent = src;
@@ -182,13 +183,15 @@
       }
     }
 
-    // Render current theme first (visible), then the other (hidden)
+    // Render current theme first, then the other; finally restore correct visibility
     renderTheme(isDark, function() {
       document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]').forEach(function(b) {
         b.classList.remove("show-raw");
         b.classList.add("mermaid-ready");
       });
-      renderTheme(!isDark);
+      renderTheme(!isDark, function() {
+        showMermaidMode(isDark);
+      });
     });
   }
 
