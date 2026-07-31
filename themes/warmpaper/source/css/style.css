@@ -1300,6 +1300,18 @@ figure.highlight .token.deleted {
     display: block;
   }
 
+  .nav-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: rgba(0, 0, 0, 0.2);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-overlay.open {
+    display: block;
+  }
+
   .site-nav {
     display: none;
     flex-direction: column;

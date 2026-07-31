@@ -4,42 +4,49 @@
   var nav = document.querySelector('.site-nav');
   if (!toggle || !nav) return;
 
+  // Create backdrop overlay
+  var overlay = document.createElement('div');
+  overlay.className = 'nav-overlay';
+  document.body.appendChild(overlay);
+
   function closeMenu() {
     toggle.setAttribute('aria-expanded', 'false');
     nav.classList.remove('open');
+    overlay.classList.remove('open');
   }
 
-  function isOpen() {
-    return nav.classList.contains('open');
+  function openMenu() {
+    toggle.setAttribute('aria-expanded', 'true');
+    nav.classList.add('open');
+    overlay.classList.add('open');
   }
 
   toggle.addEventListener('click', function () {
-    var expanded = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!expanded));
-    nav.classList.toggle('open');
+    if (nav.classList.contains('open')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   });
 
-  // Close menu when a nav link is clicked
+  // Close when a nav link is clicked
   nav.addEventListener('click', function (e) {
     if (e.target.classList.contains('nav-link')) {
       closeMenu();
     }
   });
 
-  // Close menu when clicking outside
-  document.addEventListener('click', function (e) {
-    if (!isOpen()) return;
-    if (!nav.contains(e.target) && e.target !== toggle) {
-      closeMenu();
-    }
+  // Close on overlay tap/click
+  overlay.addEventListener('click', closeMenu);
+  overlay.addEventListener('touchend', function (e) {
+    e.preventDefault();
+    closeMenu();
   });
 
-  // Close menu on scroll / touchmove
-  var scrollHandler = function () {
-    if (isOpen()) closeMenu();
-  };
-  window.addEventListener('scroll', scrollHandler, { passive: true });
-  window.addEventListener('touchmove', scrollHandler, { passive: true });
+  // Close on scroll
+  window.addEventListener('scroll', function () {
+    if (nav.classList.contains('open')) closeMenu();
+  }, { passive: true });
 })();
 
 (function () {
