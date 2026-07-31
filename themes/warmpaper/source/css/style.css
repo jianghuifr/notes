@@ -1289,6 +1289,11 @@ figure.highlight .token.deleted {
   .header-inner {
     padding: 0 1rem;
     flex-wrap: wrap;
+    position: relative;
+  }
+
+  .site-header {
+    height: var(--header-height);
   }
 
   .nav-toggle {
