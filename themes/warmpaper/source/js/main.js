@@ -4,6 +4,15 @@
   var nav = document.querySelector('.site-nav');
   if (!toggle || !nav) return;
 
+  function closeMenu() {
+    toggle.setAttribute('aria-expanded', 'false');
+    nav.classList.remove('open');
+  }
+
+  function isOpen() {
+    return nav.classList.contains('open');
+  }
+
   toggle.addEventListener('click', function () {
     var expanded = toggle.getAttribute('aria-expanded') === 'true';
     toggle.setAttribute('aria-expanded', String(!expanded));
@@ -13,10 +22,24 @@
   // Close menu when a nav link is clicked
   nav.addEventListener('click', function (e) {
     if (e.target.classList.contains('nav-link')) {
-      toggle.setAttribute('aria-expanded', 'false');
-      nav.classList.remove('open');
+      closeMenu();
     }
   });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!isOpen()) return;
+    if (!nav.contains(e.target) && e.target !== toggle) {
+      closeMenu();
+    }
+  });
+
+  // Close menu on scroll / touchmove
+  var scrollHandler = function () {
+    if (isOpen()) closeMenu();
+  };
+  window.addEventListener('scroll', scrollHandler, { passive: true });
+  window.addEventListener('touchmove', scrollHandler, { passive: true });
 })();
 
 (function () {
