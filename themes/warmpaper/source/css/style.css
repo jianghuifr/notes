@@ -647,6 +647,10 @@ img {
   border: 1px solid var(--color-border-light);
 }
 
+.post-content pre.mermaid {
+  border: none;
+}
+
 .post-content pre code {
   background: none;
   padding: 0;

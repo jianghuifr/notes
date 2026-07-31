@@ -228,5 +228,7 @@
 
   // --- Start ---
   initBlocks();
-  setTimeout(loadDiagrams, 100);
+  requestAnimationFrame(function() {
+    requestAnimationFrame(loadDiagrams);
+  });
 })();
