@@ -32,7 +32,9 @@
     if (typeof mermaid === "undefined") return;
     try {
       document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
-        var src = el.getAttribute("data-source");
+        var block = el.closest('.sea-code-block');
+        var codePre = block ? block.querySelector('.sea-code-body figure.highlight .code pre') : null;
+        var src = codePre ? (codePre.innerText || codePre.textContent) : '';
         if (!src) return;
         el.removeAttribute("data-processed");
         el.innerHTML = "";
@@ -44,7 +46,9 @@
       if (p && p.then) {
         p.then(function() {
           document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
-            var src = el.getAttribute("data-source");
+            var block = el.closest('.sea-code-block');
+            var codePre = block ? block.querySelector('.sea-code-body figure.highlight .code pre') : null;
+            var src = codePre ? (codePre.innerText || codePre.textContent) : '';
             if (src && !el.textContent.trim()) { el.textContent = src; }
           });
         });
@@ -183,12 +187,14 @@
 
     // Inject buttons into echarts blocks (already wrapped by hexo converter)
     document.querySelectorAll('.sea-code-block[data-diagram="echarts"]').forEach(function(block) {
-      var actions = block.querySelector(".sea-code-actions");
-      if (!actions || actions.children.length > 1) return; // already injected
-      // Replace existing actions with full set
       var title = block.querySelector(".sea-code-title");
-      if (title && actions) {
+      if (!title) return;
+      var actions = block.querySelector(".sea-code-actions");
+      if (actions && actions.children.length > 1) return; // already injected
+      if (actions) {
         title.replaceChild(buildActions("echarts"), actions);
+      } else {
+        title.appendChild(buildActions("echarts"));
       }
     });
 
