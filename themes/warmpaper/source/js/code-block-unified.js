@@ -1,4 +1,4 @@
-// Unified code block interactions — lazy diagram rendering + mode-based theming
+// Unified code block interactions — pre-render mermaid dark+light, toggle visibility only
 (function() {
   var STORAGE_KEY = "code-block-theme";
   var isDark = true;
@@ -20,15 +20,27 @@
   var svgChevronDown = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 678.624L233.376 400l-45.248 45.248L512 769.12l323.872-323.872L790.624 400 512 678.624z"/></svg>';
   var svgDiagram = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
 
+  // --- Show the correct diagram container based on current dark/light state ---
+  function showMermaidMode(dark) {
+    var mode = dark ? "dark" : "light";
+    var alt = dark ? "light" : "dark";
+    document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] .sea-code-diagrams').forEach(function(diagrams) {
+      var active = diagrams.querySelector('pre.mermaid[mode="' + mode + '"]');
+      var hidden = diagrams.querySelector('pre.mermaid[mode="' + alt + '"]');
+      if (active) active.style.display = "";
+      if (hidden) hidden.style.display = "none";
+    });
+  }
+
+  // --- Apply mode attribute for CSS theming (figure.highlight bg etc.) ---
   function setMode(dark) {
     var mode = dark ? "dark" : "light";
     document.querySelectorAll(".sea-code-block").forEach(function(b) {
       b.classList.toggle("code-theme-dark", dark);
-      var pre = b.querySelector("pre.mermaid");
-      if (pre) pre.setAttribute("mode", mode);
       var fig = b.querySelector("figure.highlight");
       if (fig) fig.setAttribute("mode", mode);
     });
+    showMermaidMode(dark);
     document.querySelectorAll(".sea-code-btn").forEach(function(b) {
       if (b.title === "\u5207\u6362\u4e3b\u9898") {
         b.innerHTML = dark ? svgSun : svgMoon;
@@ -92,7 +104,7 @@
     return actions;
   }
 
-  // --- Init: inject title bar buttons immediately ---
+  // --- Init: inject title bar buttons ---
   function initBlocks() {
     setMode(isDark);
 
@@ -110,15 +122,13 @@
       else { title.appendChild(buildActions("echarts")); }
     });
 
-    // Global theme toggle
+    // Global theme toggle — only switch visibility, no re-render
     document.querySelectorAll(".sea-code-btn").forEach(function(btn) {
       if (btn.title === "\u5207\u6362\u4e3b\u9898") {
         btn.onclick = function() {
           isDark = !isDark;
           setMode(isDark);
           try { localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light"); } catch(e) {}
-          // Re-render mermaid with new text colors (background is transparent via CSS)
-          renderMermaid(isDark);
         };
       }
     });
@@ -133,61 +143,59 @@
     document.head.appendChild(s);
   }
 
-  // --- Render mermaid diagrams ---
-  var _mermaidPending = null;
-  var _mermaidRunning = false;
-  function renderMermaid(dark) {
+  // --- Pre-render mermaid both themes once, then never again ---
+  function initMermaid() {
     if (typeof mermaid === "undefined") return;
-    _mermaidPending = { dark: dark };
-    if (!_mermaidRunning) _doRenderMermaid();
-  }
-  function _doRenderMermaid() {
-    if (!_mermaidPending) return;
-    _mermaidRunning = true;
-    var dark = _mermaidPending.dark;
-    _mermaidPending = null;
+    var blocks = document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]');
+    if (!blocks.length) return;
 
-    var blocks = document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid');
-    if (!blocks.length) { _mermaidRunning = false; return; }
-    var ok = false;
-    blocks.forEach(function(el) {
-      var block = el.closest(".sea-code-block");
-      if (block && block.classList.contains("show-raw") && block.classList.contains("collapsed")) return;
-      var codePre = block ? block.querySelector(".sea-code-body figure.highlight .code pre") : null;
+    // Extract source text from figure.highlight (shared for both renders)
+    var srcMap = {};
+    blocks.forEach(function(block) {
+      var codePre = block.querySelector(".sea-code-body figure.highlight .code pre");
       var lines = codePre ? codePre.querySelectorAll(".line") : null;
       var src = "";
       if (lines) { lines.forEach(function(l) { src += l.textContent + "\n"; }); }
-      if (!src) return;
-      el.removeAttribute("data-processed");
-      el.innerHTML = "";
-      el.textContent = src;
-      ok = true;
+      srcMap[block] = src;
     });
-    if (!ok) { _mermaidRunning = false; return; }
-    mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
-    var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
-    if (p && p.then) {
-      p.then(function() {
-        document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]').forEach(function(b) {
-          b.classList.remove("show-raw");
-        });
-        _mermaidRunning = false;
-        if (_mermaidPending) _doRenderMermaid();
-      }).catch(function(e) {
-        console.warn("mermaid render failed:", e);
-        _mermaidRunning = false;
-        if (_mermaidPending) _doRenderMermaid();
+
+    function renderTheme(dark, cb) {
+      var theme = dark ? "dark" : "default";
+      var mode = dark ? "dark" : "light";
+      blocks.forEach(function(block) {
+        var src = srcMap[block];
+        var el = block.querySelector('.sea-code-diagrams pre.mermaid[mode="' + mode + '"]');
+        if (!el || !src) return;
+        el.removeAttribute("data-processed");
+        el.innerHTML = "";
+        el.textContent = src;
       });
-    } else {
-      _mermaidRunning = false;
+      mermaid.initialize({ startOnLoad: false, theme: theme, securityLevel: "loose" });
+      var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] .sea-code-diagrams pre.mermaid[mode="' + mode + '"]' });
+      if (p && p.then) {
+        p.then(function() { if (cb) cb(); }).catch(function(e) {
+          console.warn("mermaid render failed (" + mode + "):", e);
+          if (cb) cb();
+        });
+      } else {
+        if (cb) cb();
+      }
     }
+
+    // Render current theme first (visible), then the other (hidden)
+    renderTheme(isDark, function() {
+      document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]').forEach(function(b) {
+        b.classList.remove("show-raw");
+        b.classList.add("mermaid-ready");
+      });
+      renderTheme(!isDark);
+    });
   }
 
   // --- Render echarts diagrams ---
   function renderEcharts() {
     if (typeof echarts === "undefined") return;
     try {
-      // Register themes
       echarts.registerTheme("warmpaper", {"color":["#C4875D","#889B6E","#D4A76A","#7B9CB5","#C4827A","#B8A45C","#8B7E6E","#6E9B8B"],"backgroundColor":"transparent","title":{"textStyle":{"color":"#4A4540"},"subtextStyle":{"color":"#8A8278"}},"line":{"itemStyle":{"borderWidth":2},"lineStyle":{"width":2},"symbolSize":6,"symbol":"circle","smooth":false},"bar":{"itemStyle":{"barBorderWidth":0,"barBorderColor":"#D5CEC2"}},"pie":{"itemStyle":{"borderWidth":0,"borderColor":"#D5CEC2"}},"categoryAxis":{"axisLine":{"show":true,"lineStyle":{"color":"#D5CEC2"}},"axisTick":{"show":false},"axisLabel":{"color":"#6B645C"},"splitLine":{"show":false}},"valueAxis":{"axisLine":{"show":false},"axisTick":{"show":false},"axisLabel":{"color":"#8A8278"},"splitLine":{"show":true,"lineStyle":{"color":"#EDE8E0","type":"dashed","width":1}}},"tooltip":{"backgroundColor":"#FFFBF5","borderColor":"#D5CEC2","borderWidth":1,"textStyle":{"color":"#4A4540"}},"legend":{"textStyle":{"color":"#5C554E"}},"dataZoom":{"backgroundColor":"rgba(240,235,227,0)","textStyle":{"color":"#5C554E"},"borderColor":"#D5CEC2"},"markPoint":{"label":{"color":"#FFFBF5"}}});
       echarts.registerTheme("warmpaper-dark", {"color":["#E0A87C","#A3B88A","#E8C48A","#99B5CC","#D99E96","#CFBE78","#A89888","#8AB5A7"],"backgroundColor":"transparent","title":{"textStyle":{"color":"#C8C0B8"},"subtextStyle":{"color":"#706860"}},"line":{"itemStyle":{"borderWidth":2},"lineStyle":{"width":2},"symbolSize":6,"symbol":"circle","smooth":false},"bar":{"itemStyle":{"barBorderWidth":0,"barBorderColor":"#2F2924"}},"pie":{"itemStyle":{"borderWidth":0,"borderColor":"#2F2924"}},"categoryAxis":{"axisLine":{"show":true,"lineStyle":{"color":"#2F2924"}},"axisTick":{"show":false},"axisLabel":{"color":"#8A8278"},"splitLine":{"show":false}},"valueAxis":{"axisLine":{"show":false},"axisTick":{"show":false},"axisLabel":{"color":"#706860"},"splitLine":{"show":true,"lineStyle":{"color":"#2A241C","type":"dashed","width":1}}},"tooltip":{"backgroundColor":"#1C1814","borderColor":"#2F2924","borderWidth":1,"textStyle":{"color":"#D4C9BC"}},"legend":{"textStyle":{"color":"#A8A099"}},"dataZoom":{"backgroundColor":"rgba(21,17,14,0)","textStyle":{"color":"#A8A099"},"borderColor":"#2F2924"},"markPoint":{"label":{"color":"#1C1814"}}});
       function getTheme() {
@@ -204,7 +212,6 @@
           ro.observe(el);
         } catch(e) {}
       });
-      // Show diagram view after render
       document.querySelectorAll('.sea-code-block[data-diagram="echarts"]').forEach(function(b) {
         b.classList.remove("show-raw");
       });
@@ -218,7 +225,7 @@
 
     if (hasMermaid) {
       loadScript("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js", function() {
-        renderMermaid(isDark);
+        initMermaid();
       });
     }
     if (hasEcharts) {
@@ -241,7 +248,6 @@
       if (shouldDark !== isDark) {
         isDark = shouldDark;
         setMode(isDark);
-        renderMermaid(isDark);
       }
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });

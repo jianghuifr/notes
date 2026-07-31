@@ -38,7 +38,11 @@ hexo.extend.filter.register('after_render:html', function (str, data) {
       + '<div class="sea-code-title"><span class="sea-code-lang">mermaid</span></div>'
       + '<div class="sea-code-body">'
       + '<figure class="highlight plaintext"><table><tr><td class="gutter"><pre>' + gutter + '</pre></td><td class="code"><pre>' + srcLines + '</pre></td></tr></table></figure>'
-      + match + '</div></div>';
+      + '<div class="sea-code-diagrams">'
+      + '<pre class="mermaid" mode="dark">' + code + '</pre>'
+      + '<pre class="mermaid" mode="light" style="display:none">' + code + '</pre>'
+      + '</div>'
+      + '</div></div>';
   });
 }, 5);
 

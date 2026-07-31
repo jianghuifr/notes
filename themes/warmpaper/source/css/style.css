@@ -649,6 +649,12 @@ img {
 
 .post-content pre.mermaid {
   border: none;
+  margin: 0;
+  background: transparent;
+}
+.sea-code-diagrams pre.mermaid {
+  margin: 0;
+  background: transparent;
 }
 
 .post-content pre code {
@@ -938,13 +944,11 @@ figure.highlight .token.deleted {
 
 /* --- Diagram toggle (ECharts / Mermaid) --- */
 .sea-code-block[data-diagram] .echarts,
-.sea-code-block[data-diagram] .mermaid { display: block; }
-.sea-code-block[data-diagram] figure.highlight,
-.sea-code-block[data-diagram] .sea-code-body > pre:not(.mermaid) { display: none; }
+.sea-code-block[data-diagram] .sea-code-diagrams { display: block; }
+.sea-code-block[data-diagram] figure.highlight { display: none; }
 .sea-code-block[data-diagram].show-raw .echarts,
-.sea-code-block[data-diagram].show-raw .mermaid { display: none; }
-.sea-code-block[data-diagram].show-raw figure.highlight,
-.sea-code-block[data-diagram].show-raw .sea-code-body > pre:not(.mermaid) { display: block; }
+.sea-code-block[data-diagram].show-raw .sea-code-diagrams { display: none; }
+.sea-code-block[data-diagram].show-raw figure.highlight { display: block; }
 
 /* --- TOC Sidebar --- */
 .toc-sidebar {
