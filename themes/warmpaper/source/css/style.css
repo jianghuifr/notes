@@ -7,7 +7,7 @@
   --color-bg: #FAF9F7;
   --color-surface: #FFFFFF;
   --color-surface-hover: #FDF8F4;
-  --color-code-bg: #FAF8F5;
+  --color-code-bg: #FFFFFF;
   --color-accent: #DA7756;
   --color-accent-hover: #C4684A;
   --color-text: #2D2B28;
@@ -52,7 +52,7 @@
     --color-bg: #1F1B17;
     --color-surface: #2B2520;
     --color-surface-hover: #332C26;
-    --color-code-bg: #2A241F;
+    --color-code-bg: #3D3732;
     --color-accent: #E89576;
     --color-accent-hover: #F0A88B;
     --color-text: #EDE4D9;
@@ -87,7 +87,7 @@
   --color-bg: #1F1B17;
   --color-surface: #2B2520;
   --color-surface-hover: #332C26;
-  --color-code-bg: #2A241F;
+  --color-code-bg: #3D3732;
   --color-accent: #E89576;
   --color-accent-hover: #F0A88B;
   --color-text: #EDE4D9;
