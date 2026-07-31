@@ -1,4 +1,4 @@
-// Unified code block interactions — global theme toggle + diagram block wrapping & buttons
+// Unified code block interactions — lazy diagram rendering + mode-based theming
 (function() {
   var STORAGE_KEY = "code-block-theme";
   var isDark = true;
@@ -7,18 +7,10 @@
   if (saved === "light") {
     isDark = false;
   } else if (saved === null) {
-    // No saved preference: follow site theme
-    // Warmpaper doesn't set data-theme on initial load; check localStorage + OS too
     var siteTheme = document.documentElement.getAttribute("data-theme");
-    if (!siteTheme) {
-      try { siteTheme = localStorage.getItem("theme"); } catch(e) {}
-    }
-    if (!siteTheme) {
-      siteTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
+    if (!siteTheme) { try { siteTheme = localStorage.getItem("theme"); } catch(e) {} }
+    if (!siteTheme) { siteTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
     isDark = (siteTheme === "dark");
-  } else {
-    isDark = (saved !== "light");
   }
 
   var svgCopy = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M832 64a96 96 0 0 1 96 96V640a96 96 0 0 1-96 96h-128v128A96 96 0 0 1 608 960H192a96 96 0 0 1-96-96V384A96 96 0 0 1 192 288h128v-128A96 96 0 0 1 416 64H832zM192 352a32 32 0 0 0-32 32v480a32 32 0 0 0 32 32h416a32 32 0 0 0 32-32V384a32 32 0 0 0-32-32H192zM416 128a32 32 0 0 0-32 32v128h224A96 96 0 0 1 704 384v288h128a32 32 0 0 0 32-32V160A32 32 0 0 0 832 128H416z"/></svg>';
@@ -28,62 +20,35 @@
   var svgChevronDown = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 678.624L233.376 400l-45.248 45.248L512 769.12l323.872-323.872L790.624 400 512 678.624z"/></svg>';
   var svgDiagram = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
 
-  function rerenderAllMermaid(dark) {
-    if (typeof mermaid === "undefined") return;
-    try {
-      document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
-        var block = el.closest('.sea-code-block');
-        var codePre = block ? block.querySelector('.sea-code-body figure.highlight .code pre') : null;
-        var src = codePre ? (codePre.innerText || codePre.textContent) : '';
-        if (!src) return;
-        el.removeAttribute("data-processed");
-        el.innerHTML = "";
-        el.textContent = src;
-      });
-      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
-      // mermaid.run() returns a Promise in v11
-      var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
-      if (p && p.then) {
-        p.then(function() {
-          document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
-            var block = el.closest('.sea-code-block');
-            var codePre = block ? block.querySelector('.sea-code-body figure.highlight .code pre') : null;
-            var src = codePre ? (codePre.innerText || codePre.textContent) : '';
-            if (src && !el.textContent.trim()) { el.textContent = src; }
-          });
-        });
-      }
-    } catch(e) {}
-  }
-
-  function syncAll(dark) {
+  function setMode(dark) {
+    var mode = dark ? "dark" : "light";
     document.querySelectorAll(".sea-code-block").forEach(function(b) {
       b.classList.toggle("code-theme-dark", dark);
+      var pre = b.querySelector("pre.mermaid");
+      if (pre) pre.setAttribute("mode", mode);
+      var fig = b.querySelector("figure.highlight");
+      if (fig) fig.setAttribute("mode", mode);
     });
     document.querySelectorAll(".sea-code-btn").forEach(function(b) {
       if (b.title === "\u5207\u6362\u4e3b\u9898") {
         b.innerHTML = dark ? svgSun : svgMoon;
       }
     });
-    rerenderAllMermaid(dark);
   }
 
   function buildActions(diagramType) {
-    // diagramType: "mermaid" or "echarts"
-    var hasToggle = diagramType !== ""; // mermaid and echarts both need source toggle
-
+    var hasToggle = diagramType !== "";
     var actions = document.createElement("div");
     actions.className = "sea-code-actions";
 
-    // Copy
     var cb = document.createElement("button");
     cb.className = "sea-code-btn";
     cb.title = "\u590d\u5236";
     cb.innerHTML = svgCopy;
     cb.onclick = function() {
       var block = cb.closest(".sea-code-block");
-      var src = block.querySelector(".sea-code-body pre") || block.querySelector(".sea-code-body .code") || block.querySelector(".sea-code-body figure");
-      var text = src ? src.textContent : "";
+      var src = block.querySelector(".sea-code-body .code pre") || block.querySelector(".sea-code-body figure.highlight");
+      var text = src ? (src.innerText || src.textContent) : "";
       navigator.clipboard.writeText(text).then(function() {
         cb.classList.add("copied");
         setTimeout(function() { cb.classList.remove("copied"); }, 1500);
@@ -91,14 +56,12 @@
     };
     actions.appendChild(cb);
 
-    // Theme
     var tb = document.createElement("button");
     tb.className = "sea-code-btn";
     tb.title = "\u5207\u6362\u4e3b\u9898";
     tb.innerHTML = isDark ? svgSun : svgMoon;
     actions.appendChild(tb);
 
-    // Collapse
     var fb = document.createElement("button");
     fb.className = "sea-code-btn";
     fb.title = "\u6298\u53e0";
@@ -110,7 +73,6 @@
     };
     actions.appendChild(fb);
 
-    // Source/Diagram toggle (mermaid and echarts)
     if (hasToggle) {
       var db = document.createElement("button");
       db.className = "sea-code-btn diagram-toggle";
@@ -130,105 +92,141 @@
     return actions;
   }
 
-  function wrapMermaid(el) {
-    if (el.closest(".sea-code-block")) return;
+  // --- Init: inject title bar buttons immediately ---
+  function initBlocks() {
+    setMode(isDark);
 
-    var wrap = document.createElement("div");
-    wrap.className = "sea-code-block";
-    wrap.setAttribute("data-diagram", "mermaid");
-
-    var title = document.createElement("div");
-    title.className = "sea-code-title";
-    var langSpan = document.createElement("span");
-    langSpan.className = "sea-code-lang";
-    langSpan.textContent = "mermaid";
-    title.appendChild(langSpan);
-    title.appendChild(buildActions("mermaid"));
-
-    var body = document.createElement("div");
-    body.className = "sea-code-body";
-
-    // Hidden pre for source
-    var srcPre = document.createElement("pre");
-    srcPre.style.cssText = "padding:14px 16px;margin:0;background:transparent;font-family:SF Mono,Cascadia Code,Fira Code,JetBrains Mono,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;color:inherit;border:none;border-radius:0;overflow:auto";
-    srcPre.textContent = el.getAttribute("data-source") || el.textContent;
-    body.appendChild(srcPre);
-
-    el.parentNode.insertBefore(wrap, el);
-    body.appendChild(el);
-    wrap.appendChild(title);
-    wrap.appendChild(body);
-
-    if (isDark) wrap.classList.add("code-theme-dark");
-  }
-
-  function wrapBareMermaids() {
-    // Wrap bare .mermaid elements that aren't already inside .sea-code-block
-    document.querySelectorAll(".mermaid").forEach(function(el) {
-      if (!el.closest(".sea-code-block")) {
-        wrapMermaid(el);
-      }
-    });
-
-    // Force re-render all wrapped mermaid with correct theme
-    if (typeof mermaid !== "undefined" && document.querySelector(".mermaid:not(.sea-code-block .mermaid)") === null) {
-      rerenderAllMermaid(isDark);
-    }
-  }
-
-  setTimeout(function() {
-    syncAll(isDark);
-
-    // Inject buttons into mermaid blocks (now wrapped server-side)
     document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] .sea-code-title').forEach(function(title) {
       if (title.querySelector(".sea-code-actions")) return;
       title.appendChild(buildActions("mermaid"));
     });
 
-    // Inject buttons into echarts blocks (already wrapped by hexo converter)
     document.querySelectorAll('.sea-code-block[data-diagram="echarts"]').forEach(function(block) {
       var title = block.querySelector(".sea-code-title");
       if (!title) return;
       var actions = block.querySelector(".sea-code-actions");
-      if (actions && actions.children.length > 1) return; // already injected
-      if (actions) {
-        title.replaceChild(buildActions("echarts"), actions);
-      } else {
-        title.appendChild(buildActions("echarts"));
-      }
+      if (actions && actions.children.length > 1) return;
+      if (actions) { title.replaceChild(buildActions("echarts"), actions); }
+      else { title.appendChild(buildActions("echarts")); }
     });
 
-    // Hijack all theme toggle buttons — global toggle
+    // Global theme toggle
     document.querySelectorAll(".sea-code-btn").forEach(function(btn) {
       if (btn.title === "\u5207\u6362\u4e3b\u9898") {
         btn.onclick = function() {
           isDark = !isDark;
-          syncAll(isDark);
+          setMode(isDark);
           try { localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light"); } catch(e) {}
+          // Re-render mermaid with new text colors (background is transparent via CSS)
+          renderMermaid(isDark);
         };
       }
     });
+  }
 
-    // Watch for site theme changes — re-sync code blocks if user hasn't set manual preference
-    if (window.MutationObserver) {
-      var observer = new MutationObserver(function() {
-        var manual = null;
-        try { manual = localStorage.getItem(STORAGE_KEY); } catch(e) {}
-        if (manual) return; // user manually set preference, don't override
-        var t = document.documentElement.getAttribute("data-theme");
-        if (!t) {
-          try { t = localStorage.getItem("theme"); } catch(e) {}
-        }
-        if (!t) {
-          t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        }
-        var shouldDark = (t === "dark");
-        if (shouldDark !== isDark) {
-          isDark = shouldDark;
-          syncAll(isDark);
-        }
+  // --- Lazy load a script ---
+  function loadScript(url, cb) {
+    var s = document.createElement("script");
+    s.src = url;
+    s.onload = cb;
+    s.onerror = cb;
+    document.head.appendChild(s);
+  }
+
+  // --- Render mermaid diagrams ---
+  function renderMermaid(dark) {
+    if (typeof mermaid === "undefined") return;
+    try {
+      var blocks = document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid');
+      if (!blocks.length) return;
+      blocks.forEach(function(el) {
+        var block = el.closest(".sea-code-block");
+        var codePre = block ? block.querySelector(".sea-code-body figure.highlight .code pre") : null;
+        var lines = codePre ? codePre.querySelectorAll(".line") : null;
+        var src = "";
+        if (lines) { lines.forEach(function(l) { src += l.textContent + "\n"; }); }
+        if (!src) return;
+        el.removeAttribute("data-processed");
+        el.innerHTML = "";
+        el.textContent = src;
       });
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
+      var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
+      if (p && p.then) {
+        p.then(function() {
+          document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]').forEach(function(b) {
+            b.classList.remove("show-raw"); // show diagram by default after render
+          });
+        });
+      }
+    } catch(e) {}
+  }
+
+  // --- Render echarts diagrams ---
+  function renderEcharts() {
+    if (typeof echarts === "undefined") return;
+    try {
+      // Register themes
+      echarts.registerTheme("warmpaper", {"color":["#C4875D","#889B6E","#D4A76A","#7B9CB5","#C4827A","#B8A45C","#8B7E6E","#6E9B8B"],"backgroundColor":"transparent","title":{"textStyle":{"color":"#4A4540"},"subtextStyle":{"color":"#8A8278"}},"line":{"itemStyle":{"borderWidth":2},"lineStyle":{"width":2},"symbolSize":6,"symbol":"circle","smooth":false},"bar":{"itemStyle":{"barBorderWidth":0,"barBorderColor":"#D5CEC2"}},"pie":{"itemStyle":{"borderWidth":0,"borderColor":"#D5CEC2"}},"categoryAxis":{"axisLine":{"show":true,"lineStyle":{"color":"#D5CEC2"}},"axisTick":{"show":false},"axisLabel":{"color":"#6B645C"},"splitLine":{"show":false}},"valueAxis":{"axisLine":{"show":false},"axisTick":{"show":false},"axisLabel":{"color":"#8A8278"},"splitLine":{"show":true,"lineStyle":{"color":"#EDE8E0","type":"dashed","width":1}}},"tooltip":{"backgroundColor":"#FFFBF5","borderColor":"#D5CEC2","borderWidth":1,"textStyle":{"color":"#4A4540"}},"legend":{"textStyle":{"color":"#5C554E"}},"dataZoom":{"backgroundColor":"rgba(240,235,227,0)","textStyle":{"color":"#5C554E"},"borderColor":"#D5CEC2"},"markPoint":{"label":{"color":"#FFFBF5"}}});
+      echarts.registerTheme("warmpaper-dark", {"color":["#E0A87C","#A3B88A","#E8C48A","#99B5CC","#D99E96","#CFBE78","#A89888","#8AB5A7"],"backgroundColor":"transparent","title":{"textStyle":{"color":"#C8C0B8"},"subtextStyle":{"color":"#706860"}},"line":{"itemStyle":{"borderWidth":2},"lineStyle":{"width":2},"symbolSize":6,"symbol":"circle","smooth":false},"bar":{"itemStyle":{"barBorderWidth":0,"barBorderColor":"#2F2924"}},"pie":{"itemStyle":{"borderWidth":0,"borderColor":"#2F2924"}},"categoryAxis":{"axisLine":{"show":true,"lineStyle":{"color":"#2F2924"}},"axisTick":{"show":false},"axisLabel":{"color":"#8A8278"},"splitLine":{"show":false}},"valueAxis":{"axisLine":{"show":false},"axisTick":{"show":false},"axisLabel":{"color":"#706860"},"splitLine":{"show":true,"lineStyle":{"color":"#2A241C","type":"dashed","width":1}}},"tooltip":{"backgroundColor":"#1C1814","borderColor":"#2F2924","borderWidth":1,"textStyle":{"color":"#D4C9BC"}},"legend":{"textStyle":{"color":"#A8A099"}},"dataZoom":{"backgroundColor":"rgba(21,17,14,0)","textStyle":{"color":"#A8A099"},"borderColor":"#2F2924"},"markPoint":{"label":{"color":"#1C1814"}}});
+      function getTheme() {
+        return document.documentElement.getAttribute("data-theme") === "dark" ? "warmpaper-dark" : "warmpaper";
+      }
+      document.querySelectorAll(".echarts").forEach(function(el) {
+        try {
+          var raw = el.textContent.trim();
+          var config = JSON.parse(raw);
+          var chart = echarts.init(el, getTheme());
+          chart.setOption(config);
+          el._echarts_instance = chart;
+          var ro = new ResizeObserver(function() { chart.resize(); });
+          ro.observe(el);
+        } catch(e) {}
+      });
+      // Show diagram view after render
+      document.querySelectorAll('.sea-code-block[data-diagram="echarts"]').forEach(function(b) {
+        b.classList.remove("show-raw");
+      });
+    } catch(e) {}
+  }
+
+  // --- Load diagrams lazily ---
+  function loadDiagrams() {
+    var hasMermaid = document.querySelector('.sea-code-block[data-diagram="mermaid"]');
+    var hasEcharts = document.querySelector('.sea-code-block[data-diagram="echarts"]');
+
+    if (hasMermaid) {
+      loadScript("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js", function() {
+        renderMermaid(isDark);
+      });
     }
-  }, 200);
+    if (hasEcharts) {
+      loadScript("https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js", function() {
+        renderEcharts();
+      });
+    }
+  }
+
+  // --- Watch for site theme changes ---
+  if (window.MutationObserver) {
+    var observer = new MutationObserver(function() {
+      var manual = null;
+      try { manual = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+      if (manual) return;
+      var t = document.documentElement.getAttribute("data-theme");
+      if (!t) { try { t = localStorage.getItem("theme"); } catch(e) {} }
+      if (!t) { t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+      var shouldDark = (t === "dark");
+      if (shouldDark !== isDark) {
+        isDark = shouldDark;
+        setMode(isDark);
+        renderMermaid(isDark);
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  }
+
+  // --- Start ---
+  initBlocks();
+  setTimeout(loadDiagrams, 100);
 })();
