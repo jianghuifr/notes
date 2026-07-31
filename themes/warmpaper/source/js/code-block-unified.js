@@ -134,32 +134,49 @@
   }
 
   // --- Render mermaid diagrams ---
+  var _mermaidTimer = null;
+  var _mermaidVersion = 0;
   function renderMermaid(dark) {
     if (typeof mermaid === "undefined") return;
-    try {
-      var blocks = document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid');
-      if (!blocks.length) return;
-      blocks.forEach(function(el) {
-        var block = el.closest(".sea-code-block");
-        var codePre = block ? block.querySelector(".sea-code-body figure.highlight .code pre") : null;
-        var lines = codePre ? codePre.querySelectorAll(".line") : null;
-        var src = "";
-        if (lines) { lines.forEach(function(l) { src += l.textContent + "\n"; }); }
-        if (!src) return;
-        el.removeAttribute("data-processed");
-        el.innerHTML = "";
-        el.textContent = src;
-      });
-      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
-      var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
-      if (p && p.then) {
-        p.then(function() {
-          document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]').forEach(function(b) {
-            b.classList.remove("show-raw"); // show diagram by default after render
-          });
+    // Debounce: rapid switching coalesces to one render
+    if (_mermaidTimer) clearTimeout(_mermaidTimer);
+    _mermaidTimer = setTimeout(function() { _renderMermaidNow(dark); }, 300);
+  }
+  function _renderMermaidNow(dark) {
+    var version = ++_mermaidVersion;
+    var blocks = document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid');
+    if (!blocks.length) return;
+    var ok = false;
+    blocks.forEach(function(el) {
+      var block = el.closest(".sea-code-block");
+      // Skip hidden containers — mermaid can't layout zero-size elements
+      if (block && block.classList.contains("show-raw") && block.classList.contains("collapsed")) return;
+      var codePre = block ? block.querySelector(".sea-code-body figure.highlight .code pre") : null;
+      var lines = codePre ? codePre.querySelectorAll(".line") : null;
+      var src = "";
+      if (lines) { lines.forEach(function(l) { src += l.textContent + "\n"; }); }
+      if (!src) return;
+      el.removeAttribute("data-processed");
+      el.innerHTML = "";
+      el.textContent = src;
+      ok = true;
+    });
+    if (!ok) return;
+    mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
+    var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
+    if (p && p.then) {
+      p.then(function() {
+        // Drop stale renders — a newer call already started
+        if (version !== _mermaidVersion) return;
+        document.querySelectorAll('.sea-code-block[data-diagram="mermaid"]').forEach(function(b) {
+          b.classList.remove("show-raw");
         });
-      }
-    } catch(e) {}
+      }).catch(function(e) {
+        // Drop stale errors too
+        if (version !== _mermaidVersion) return;
+        console.warn("mermaid render failed:", e);
+      });
+    }
   }
 
   // --- Render echarts diagrams ---
