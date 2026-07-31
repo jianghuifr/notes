@@ -1,26 +1,26 @@
-// Unified code block interactions — theme toggle + buttons for mermaid/echarts blocks
+// Unified code block interactions — global theme toggle + diagram block wrapping & buttons
 (function() {
   var STORAGE_KEY = "code-block-theme";
-
-  // === Theme detection ===
-  function detectSiteTheme() {
-    var t = document.documentElement.getAttribute("data-theme");
-    if (!t) { try { t = localStorage.getItem("theme"); } catch(e) {} }
-    if (!t) { t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
-    return t;
+  var isDark = true;
+  var saved = null;
+  try { saved = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+  if (saved === "light") {
+    isDark = false;
+  } else if (saved === null) {
+    // No saved preference: follow site theme
+    // Warmpaper doesn't set data-theme on initial load; check localStorage + OS too
+    var siteTheme = document.documentElement.getAttribute("data-theme");
+    if (!siteTheme) {
+      try { siteTheme = localStorage.getItem("theme"); } catch(e) {}
+    }
+    if (!siteTheme) {
+      siteTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    isDark = (siteTheme === "dark");
+  } else {
+    isDark = (saved !== "light");
   }
 
-  function getIsDark() {
-    var saved = null;
-    try { saved = localStorage.getItem(STORAGE_KEY); } catch(e) {}
-    if (saved === "light") return false;
-    if (saved === "dark") return true;
-    return detectSiteTheme() === "dark";
-  }
-
-  var isDark = getIsDark();
-
-  // === SVG icons ===
   var svgCopy = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M832 64a96 96 0 0 1 96 96V640a96 96 0 0 1-96 96h-128v128A96 96 0 0 1 608 960H192a96 96 0 0 1-96-96V384A96 96 0 0 1 192 288h128v-128A96 96 0 0 1 416 64H832zM192 352a32 32 0 0 0-32 32v480a32 32 0 0 0 32 32h416a32 32 0 0 0 32-32V384a32 32 0 0 0-32-32H192zM416 128a32 32 0 0 0-32 32v128h224A96 96 0 0 1 704 384v288h128a32 32 0 0 0 32-32V160A32 32 0 0 0 832 128H416z"/></svg>';
   var svgSun = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 320c-106.048 0-192 85.952-192 192s85.952 192 192 192 192-85.952 192-192-85.952-192-192-192zM512 256c141.376 0 256 114.624 256 256s-114.624 256-256 256-256-114.624-256-256 114.624-256 256-256zM480 128V32h64v96h-64zM480 992v-96h64v96h-64zM928 480h96v64h-96v-64zM0 480h96v64H0v-64zM762.368 198.656l67.84-67.84 45.248 45.248-67.84 67.84-45.248-45.248zM145.696 847.936l67.84-67.84 45.248 45.248-67.84 67.84-45.248-45.248zM758.304 829.76l45.248-45.248 67.84 67.84-45.248 45.248-67.84-67.84zM149.76 171.616l45.248-45.248 67.84 67.84-45.248 45.248-67.84-67.84z"/></svg>';
   var svgMoon = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M517.568 128c-212.096 0-384 171.904-384 384s171.904 384 384 384c70.976 0 137.472-19.2 194.048-52.736C615.84 893.76 512 779.456 512 640c0-159.744 130.944-291.328 286.528-314.24C734.976 194.496 634.688 128 517.568 128z"/></svg>';
@@ -28,24 +28,30 @@
   var svgChevronDown = '<svg viewBox="0 0 1024 1024" fill="currentColor"><path d="M512 678.624L233.376 400l-45.248 45.248L512 769.12l323.872-323.872L790.624 400 512 678.624z"/></svg>';
   var svgDiagram = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>';
 
-  // === Mermaid re-render ===
-  function rerenderMermaid(dark) {
+  function rerenderAllMermaid(dark) {
     if (typeof mermaid === "undefined") return;
-    var sel = '.sea-code-block[data-diagram="mermaid"] pre.mermaid';
-    var els = document.querySelectorAll(sel);
-    if (!els.length) return;
-    mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
-    els.forEach(function(el) {
-      var src = el.getAttribute("data-source");
-      if (!src) return;
-      el.removeAttribute("data-processed");
-      el.innerHTML = "";
-      el.textContent = src;
-    });
-    mermaid.run({ querySelector: sel });
+    try {
+      document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
+        var src = el.getAttribute("data-source");
+        if (!src) return;
+        el.removeAttribute("data-processed");
+        el.innerHTML = "";
+        el.textContent = src;
+      });
+      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default", securityLevel: "loose" });
+      // mermaid.run() returns a Promise in v11
+      var p = mermaid.run({ querySelector: '.sea-code-block[data-diagram="mermaid"] pre.mermaid' });
+      if (p && p.then) {
+        p.then(function() {
+          document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] pre.mermaid').forEach(function(el) {
+            var src = el.getAttribute("data-source");
+            if (src && !el.textContent.trim()) { el.textContent = src; }
+          });
+        });
+      }
+    } catch(e) {}
   }
 
-  // === Sync all code blocks ===
   function syncAll(dark) {
     document.querySelectorAll(".sea-code-block").forEach(function(b) {
       b.classList.toggle("code-theme-dark", dark);
@@ -55,11 +61,13 @@
         b.innerHTML = dark ? svgSun : svgMoon;
       }
     });
-    rerenderMermaid(dark);
+    rerenderAllMermaid(dark);
   }
 
-  // === Build action buttons ===
   function buildActions(diagramType) {
+    // diagramType: "mermaid" or "echarts"
+    var hasToggle = diagramType !== ""; // mermaid and echarts both need source toggle
+
     var actions = document.createElement("div");
     actions.className = "sea-code-actions";
 
@@ -79,16 +87,11 @@
     };
     actions.appendChild(cb);
 
-    // Theme toggle
+    // Theme
     var tb = document.createElement("button");
     tb.className = "sea-code-btn";
     tb.title = "\u5207\u6362\u4e3b\u9898";
     tb.innerHTML = isDark ? svgSun : svgMoon;
-    tb.onclick = function() {
-      isDark = !isDark;
-      syncAll(isDark);
-      try { localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light"); } catch(e) {}
-    };
     actions.appendChild(tb);
 
     // Collapse
@@ -103,8 +106,8 @@
     };
     actions.appendChild(fb);
 
-    // Source/Diagram toggle (mermaid + echarts)
-    if (diagramType) {
+    // Source/Diagram toggle (mermaid and echarts)
+    if (hasToggle) {
       var db = document.createElement("button");
       db.className = "sea-code-btn diagram-toggle";
       db.title = "\u6e90\u7801/\u56fe\u8868";
@@ -123,50 +126,103 @@
     return actions;
   }
 
-  // === Init: inject buttons, set theme, watch changes ===
-  function init() {
-    // Add buttons to mermaid blocks
+  function wrapMermaid(el) {
+    if (el.closest(".sea-code-block")) return;
+
+    var wrap = document.createElement("div");
+    wrap.className = "sea-code-block";
+    wrap.setAttribute("data-diagram", "mermaid");
+
+    var title = document.createElement("div");
+    title.className = "sea-code-title";
+    var langSpan = document.createElement("span");
+    langSpan.className = "sea-code-lang";
+    langSpan.textContent = "mermaid";
+    title.appendChild(langSpan);
+    title.appendChild(buildActions("mermaid"));
+
+    var body = document.createElement("div");
+    body.className = "sea-code-body";
+
+    // Hidden pre for source
+    var srcPre = document.createElement("pre");
+    srcPre.style.cssText = "padding:14px 16px;margin:0;background:transparent;font-family:SF Mono,Cascadia Code,Fira Code,JetBrains Mono,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;color:inherit;border:none;border-radius:0;overflow:auto";
+    srcPre.textContent = el.getAttribute("data-source") || el.textContent;
+    body.appendChild(srcPre);
+
+    el.parentNode.insertBefore(wrap, el);
+    body.appendChild(el);
+    wrap.appendChild(title);
+    wrap.appendChild(body);
+
+    if (isDark) wrap.classList.add("code-theme-dark");
+  }
+
+  function wrapBareMermaids() {
+    // Wrap bare .mermaid elements that aren't already inside .sea-code-block
+    document.querySelectorAll(".mermaid").forEach(function(el) {
+      if (!el.closest(".sea-code-block")) {
+        wrapMermaid(el);
+      }
+    });
+
+    // Force re-render all wrapped mermaid with correct theme
+    if (typeof mermaid !== "undefined" && document.querySelector(".mermaid:not(.sea-code-block .mermaid)") === null) {
+      rerenderAllMermaid(isDark);
+    }
+  }
+
+  setTimeout(function() {
+    syncAll(isDark);
+
+    // Inject buttons into mermaid blocks (now wrapped server-side)
     document.querySelectorAll('.sea-code-block[data-diagram="mermaid"] .sea-code-title').forEach(function(title) {
       if (title.querySelector(".sea-code-actions")) return;
       title.appendChild(buildActions("mermaid"));
     });
 
-    // Add buttons to echarts blocks
-    document.querySelectorAll('.sea-code-block[data-diagram="echarts"] .sea-code-title').forEach(function(title) {
-      var existing = title.querySelector(".sea-code-actions");
-      if (existing && existing.children.length > 0) {
-        // Replace the minimal echarts actions with full set
-        existing.replaceWith(buildActions("echarts"));
+    // Inject buttons into echarts blocks (already wrapped by hexo converter)
+    document.querySelectorAll('.sea-code-block[data-diagram="echarts"]').forEach(function(block) {
+      var actions = block.querySelector(".sea-code-actions");
+      if (!actions || actions.children.length > 1) return; // already injected
+      // Replace existing actions with full set
+      var title = block.querySelector(".sea-code-title");
+      if (title && actions) {
+        title.replaceChild(buildActions("echarts"), actions);
       }
     });
 
-  // Apply initial theme (CSS only — mermaid already rendered by inline script)
-    document.querySelectorAll(".sea-code-block").forEach(function(b) {
-      b.classList.toggle("code-theme-dark", isDark);
-    });
-    document.querySelectorAll(".sea-code-btn").forEach(function(b) {
-      if (b.title === "\u5207\u6362\u4e3b\u9898") {
-        b.innerHTML = isDark ? svgSun : svgMoon;
+    // Hijack all theme toggle buttons — global toggle
+    document.querySelectorAll(".sea-code-btn").forEach(function(btn) {
+      if (btn.title === "\u5207\u6362\u4e3b\u9898") {
+        btn.onclick = function() {
+          isDark = !isDark;
+          syncAll(isDark);
+          try { localStorage.setItem(STORAGE_KEY, isDark ? "dark" : "light"); } catch(e) {}
+        };
       }
     });
 
-    // Watch for site theme changes (follow if user hasn't manually set code block preference)
+    // Watch for site theme changes — re-sync code blocks if user hasn't set manual preference
     if (window.MutationObserver) {
-      new MutationObserver(function() {
-        try { if (localStorage.getItem(STORAGE_KEY)) return; } catch(e) {}
-        var shouldDark = detectSiteTheme() === "dark";
+      var observer = new MutationObserver(function() {
+        var manual = null;
+        try { manual = localStorage.getItem(STORAGE_KEY); } catch(e) {}
+        if (manual) return; // user manually set preference, don't override
+        var t = document.documentElement.getAttribute("data-theme");
+        if (!t) {
+          try { t = localStorage.getItem("theme"); } catch(e) {}
+        }
+        if (!t) {
+          t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        var shouldDark = (t === "dark");
         if (shouldDark !== isDark) {
           isDark = shouldDark;
           syncAll(isDark);
         }
-      }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     }
-  }
-
-  // Run after mermaid.js loads (it's loaded before us in the HTML)
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function() { setTimeout(init, 100); });
-  } else {
-    setTimeout(init, 100);
-  }
+  }, 200);
 })();
