@@ -6,6 +6,7 @@ menu:
   Archives: /archives
   Tags: /tags
   About: /about
+  Album: /album
 
 # Table of Contents (right sidebar on post pages)
 toc:
