@@ -1,10 +1,10 @@
-<% if (theme.profile && page.showProfile) { %>
-  <%- partial('partial/profile') %>
-<% } %>
-<article class="page-content">
+<article class="page-content<% if (page.showProfile) { %> page-about<% } %>">
   <h1><%= page.title %></h1>
   <div class="post-content">
     <%- page.content %>
+    <% if (theme.profile && page.showProfile) { %>
+      <%- partial('partial/profile') %>
+    <% } %>
   </div>
 
   <% if ((page.math !== undefined) ? page.math : (theme.math && theme.math.enable)) { %>

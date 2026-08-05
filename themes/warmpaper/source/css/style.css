@@ -1388,3 +1388,19 @@ figure.highlight .token.deleted {
     max-width: 100%;
   }
 }
+
+/* About page — vertical centering */
+.page-about {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - var(--header-height) - 6rem);
+  text-align: center;
+}
+.page-about .profile-card {
+  margin: 2rem auto 0;
+  max-width: 320px;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
