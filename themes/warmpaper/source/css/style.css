@@ -570,7 +570,6 @@ img {
   position: relative;
   max-width: var(--content-width);
   margin: 0 auto;
-  overflow-x: hidden;
 }
 
 /* --- Post Content Typography --- */
