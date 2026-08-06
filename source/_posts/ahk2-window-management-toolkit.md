@@ -13,7 +13,7 @@ Windows 上缺三个 macOS 习以为常的操作：Cmd+` 同应用窗口切换�
 
 ## 同应用窗口切换（Cmd+`）
 
-AHK v1 实现，核心逻辑很短：
+核心逻辑很短：
 
 ```autohotkey
 #`::SwitchToSimilarWindow()
