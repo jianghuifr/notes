@@ -515,7 +515,20 @@ micro-lighter::part(copy-button):hover { color: var(--color-accent); border-colo
 }
 .lightbox.open { display: flex; animation: search-fade 0.15s ease; }
 .lightbox-figure { max-width: 100%; max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.7rem; margin: 0; cursor: zoom-out; }
-.lightbox-img { max-width: 100%; max-height: calc(100vh - 6rem); border-radius: var(--radius); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4); }
+.lightbox-stage {
+  display: flex; align-items: center; justify-content: center;
+  max-width: 100%; max-height: calc(100vh - 6rem);
+}
+.lightbox-media {
+  max-width: 100%;
+  max-height: calc(100vh - 6rem);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+/* mermaid SVG 在灯箱里按 JS 算好的基准尺寸渲染，max 限制防止超视口 */
+.lightbox-stage svg.lightbox-media {
+  display: block;
+}
 .lightbox-caption { color: rgba(255, 255, 255, 0.85); font-size: 0.85rem; text-align: center; }
 
 /* --- Responsive --- */

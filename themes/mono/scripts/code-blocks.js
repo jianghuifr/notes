@@ -13,6 +13,18 @@ function isMono() {
   return hexo.config.theme === 'mono';
 }
 
+// ```echarts 经 hexo 的 backtick_code_block 拦截后，语言丢失、落为 plaintext，
+// 内容仍是 JSON。识别其是否 echarts 配置（与 warmpaper 侧同一组键）。
+function isEchartsJson(text) {
+  try {
+    var obj = JSON.parse(text);
+    return !!(obj && (obj.series || obj.xAxis || obj.yAxis || obj.radar || obj.geo || obj.visualMap));
+  } catch (e) {
+    return false;
+  }
+}
+
+// 反扁平化：figure.highlight → 纯文本 pre>code；echarts JSON → <div class="echarts">
 hexo.extend.filter.register('after_render:html', function (str) {
   if (!isMono()) return str;
 
@@ -27,30 +39,16 @@ hexo.extend.filter.register('after_render:html', function (str) {
         .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
         .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
         .replace(/\n$/, '');
-      var cls = lang ? ' class="language-' + lang + '"' : '';
+
+      // echarts 配置（来自 ```echarts 围栏）→ 数据容器，浏览器端 echarts 初始化
+      if (lang === '' || lang === 'plaintext' || lang === 'echarts') {
+        if (isEchartsJson(text)) {
+          return '<div class="echarts">' + text.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>';
+        }
+      }
+
+      var cls = lang && lang !== 'plaintext' ? ' class="language-' + lang + '"' : '';
       return '<pre><code' + cls + '>' + text + '</code></pre>';
     }
   );
 }, 1);
-
-// --- Mermaid: hexo-filter-mermaid-diagrams 已把 ```mermaid 转成 <pre class="mermaid">，
-// mono 直接保留（交由浏览器端 mermaid CDN 渲染），不需要 warmpaper 的双模式预渲染包装。 ---
-
-// --- ECharts: 识别 ```echarts 代码块（还原后是 <pre><code class="language-echarts">），
-// 转成用于 ECharts 初始化的 JSON 容器。 ---
-hexo.extend.filter.register('after_render:html', function (str) {
-  if (!isMono()) return str;
-
-  return str.replace(
-    /<pre><code class="language-echarts">([\s\S]*?)<\/code><\/pre>/g,
-    function (match, raw) {
-      try {
-        var obj = JSON.parse(raw);
-        if (obj && (obj.series || obj.xAxis || obj.yAxis || obj.radar || obj.geo || obj.visualMap)) {
-          return '<div class="echarts">' + raw.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</div>';
-        }
-      } catch (e) {}
-      return match;
-    }
-  );
-}, 2);

@@ -193,42 +193,125 @@
   })();
 
   // ---------- lightbox ----------
+  // 支持三类内容：普通图片 <img>、mermaid 渲染的 <svg>、echarts 的 <canvas>。
+  // svg/canvas 先克隆/复制位图，不动原节点 —— 原图表的 echarts 实例、
+  // mermaid 交互不受影响。
   (function () {
     var overlay = document.getElementById('lightbox');
-    var img = document.getElementById('lightbox-img');
+    var stage = document.getElementById('lightbox-stage');
     var caption = document.getElementById('lightbox-caption');
-    if (!overlay || !img) return;
+    if (!overlay || !stage) return;
     var lastFocus = null;
-    function open(src, alt) {
+
+    function open(content, capText) {
       lastFocus = document.activeElement;
-      img.src = src;
-      img.alt = alt || '';
-      caption.textContent = alt || '';
-      caption.style.display = alt ? '' : 'none';
+      stage.innerHTML = '';
+      stage.appendChild(content);
+      caption.textContent = capText || '';
+      caption.style.display = capText ? '' : 'none';
       overlay.setAttribute('aria-hidden', 'false');
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
+
     function close() {
       overlay.setAttribute('aria-hidden', 'true');
       overlay.classList.remove('open');
       document.body.style.overflow = '';
-      img.src = '';
+      stage.innerHTML = '';
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
+
+    // --- 图片 ---
+    function imageLb(img) {
+      var c = document.createElement('img');
+      c.className = 'lightbox-media';
+      c.src = img.currentSrc || img.src;
+      c.alt = img.alt || '';
+      open(c, img.alt);
+    }
+
+    // --- mermaid svg: 深克隆（含内联样式/viewBox），限制滚动容器 ---
+    function svgLb(origin) {
+      var s = origin.cloneNode(true);
+      s.classList.add('lightbox-media');
+      // svg 无固有尺寸时 max-width:100% 不生效（会塌缩成 0），
+      // 必须给出显式基准尺寸：按 viewBox 比例放大到视口限制内的最大宽
+      s.removeAttribute('width');
+      s.style.maxWidth = '';
+      s.style.width = '';
+      s.style.height = '';
+      s.style.display = 'block';
+
+      var vb = s.getAttribute('viewBox');
+      var rect = origin.getBoundingClientRect();
+      if (vb) {
+        var parts = vb.split(/\s+/).map(Number);
+        var ratio = parts[3] / parts[2]; // h / w
+        var maxW = Math.min(window.innerWidth - 64, 1600);
+        var maxH = window.innerHeight - 96;
+        var w = maxW;
+        if (ratio > 0 && w * ratio > maxH) w = maxH / ratio;
+        s.setAttribute('width', Math.round(w));
+        s.setAttribute('height', Math.round(w * ratio));
+      } else if (rect.width) {
+        s.setAttribute('width', Math.round(rect.width));
+        s.setAttribute('height', Math.round(rect.height));
+      }
+      open(s, '');
+    }
+
+    // --- echarts canvas: drawImage 复制位图（cloneNode 会丢像素） ---
+    function canvasLb(cv) {
+      var c = document.createElement('canvas');
+      c.className = 'lightbox-media';
+      c.width = cv.width;
+      c.height = cv.height;
+      var ctx = c.getContext('2d');
+      ctx.drawImage(cv, 0, 0);
+      // 保持原始 css 尺寸（echarts 把逻辑尺寸写在 style 上）
+      if (cv.style.width) c.style.width = cv.style.width;
+      if (cv.style.height) c.style.height = cv.style.height;
+      open(c, '');
+    }
+
     document.addEventListener('click', function (e) {
       var t = e.target;
       if (!(t instanceof Element)) return;
+
+      // 灯箱开着时：点内容本体 / 遮罩 / 图注 → 关闭
       if (overlay.classList.contains('open')) {
-        if (t === overlay || t === img || t === caption) { e.preventDefault(); close(); }
+        if (t === overlay || stage.contains(t) || t === caption) { e.preventDefault(); close(); }
         return;
       }
-      if (t.tagName === 'IMG' && t.closest('.post-content')) {
-        if (t.closest('a') || t.closest('.echarts')) return;
+
+      // 内容在正文之外的一律不触发
+      if (!t.closest('.post-content')) return;
+
+      // echarts 图表（容器是 <div class="echarts">，内部是 canvas）
+      var ec = t.closest('.echarts');
+      if (ec) {
+        var cv = ec.querySelector('canvas');
+        if (cv) { e.preventDefault(); canvasLb(cv); }
+        return;
+      }
+
+      // mermaid 图（<pre class="mermaid"> 内的 svg）
+      var mermaidPre = t.closest('pre.mermaid');
+      if (mermaidPre) {
+        var svg = mermaidPre.querySelector('svg');
+        if (svg) { e.preventDefault(); svgLb(svg); }
+        return;
+      }
+
+      // 普通图片
+      if (t.tagName === 'IMG') {
+        if (t.closest('a')) return;
         e.preventDefault();
-        open(t.currentSrc || t.src, t.alt);
+        imageLb(t);
       }
     });
+
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('open')) { e.preventDefault(); close(); }
     });
