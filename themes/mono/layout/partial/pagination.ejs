@@ -1,0 +1,26 @@
+<% if (page.total > 1) { %>
+<nav class="pagination">
+  <% if (page.prev) { %>
+    <a class="prev" href="<%- url_for(page.prev_link) %>">&laquo; 上一页</a>
+  <% } %>
+  <% var base = page.base || 'page/'; %>
+  <% for (var i = 1; i <= page.total; i++) { %>
+    <% if (i === 1) { %>
+      <% if (i === page.current) { %>
+        <span class="current">1</span>
+      <% } else { %>
+        <a href="<%- url_for('/') %>">1</a>
+      <% } %>
+    <% } else { %>
+      <% if (i === page.current) { %>
+        <span class="current"><%= i %></span>
+      <% } else { %>
+        <a href="<%- url_for(base + i + '/') %>"><%= i %></a>
+      <% } %>
+    <% } %>
+  <% } %>
+  <% if (page.next) { %>
+    <a class="next" href="<%- url_for(page.next_link) %>">下一页 &raquo;</a>
+  <% } %>
+</nav>
+<% } %>

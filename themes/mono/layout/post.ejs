@@ -1,6 +1,4 @@
 <%
-// 提前生成目录：类名和侧栏出自同一个变量，不会出现「留了位置却没目录」
-// （例如全文标题都不在 min_depth~max_depth 范围内时 toc() 返回空串）
 var tocContent = (theme.toc && theme.toc.enable) ? toc(page.content, {
   class: 'toc',
   list_number: theme.toc.list_number || false,
@@ -8,7 +6,7 @@ var tocContent = (theme.toc && theme.toc.enable) ? toc(page.content, {
   min_depth: theme.toc.min_depth || 2
 }) : '';
 
-// 字数统计：中文按字符、英文/数字按单词；阅读速度按 350 字/分钟折算
+// 字数统计：中文按字符、英文按单词；阅读速度按 350 字/分钟折算
 var plainText = strip_html(page.content);
 var cjkCount = (plainText.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g) || []).length;
 var latinCount = (plainText.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g, ' ').match(/[a-zA-Z0-9]+/g) || []).length;
@@ -27,7 +25,7 @@ var readMinutes = Math.max(1, Math.round(totalWords / 350));
       <% if (page.categories && page.categories.length) { %>
         <span class="separator">&middot;</span>
         <% page.categories.each(function(cat){ %>
-          <a href="<%- url_for(cat.path) %>"><%= cat.name %></a>
+          <a class="meta-link" href="<%- url_for(cat.path) %>"><%= cat.name %></a>
         <% }) %>
       <% } %>
     </div>
@@ -43,12 +41,11 @@ var readMinutes = Math.max(1, Math.round(totalWords / 350));
     <% } %>
   </div>
 
-  <% if (theme.waline && theme.waline.enable) { %>
-    <%- partial('partial/comment') %>
-  <% } %>
-
   <% if (theme.giscus && theme.giscus.enable) { %>
     <%- partial('partial/giscus') %>
+  <% } %>
+  <% if (theme.waline && theme.waline.enable) { %>
+    <%- partial('partial/comment') %>
   <% } %>
 
   <footer class="post-footer">
@@ -68,8 +65,4 @@ var readMinutes = Math.max(1, Math.round(totalWords / 350));
       <% } %>
     </nav>
   </footer>
-
-  <% if ((page.math !== undefined) ? page.math : (theme.math && theme.math.enable)) { %>
-    <%- partial('partial/math') %>
-  <% } %>
 </article>

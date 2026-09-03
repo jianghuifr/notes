@@ -256,12 +256,12 @@
     var hasEcharts = document.querySelector('.sea-code-block[data-diagram="echarts"]');
 
     if (hasMermaid) {
-      loadScript("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js", function() {
+      loadScript("https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js", function() {
         initMermaid();
       });
     }
     if (hasEcharts) {
-      loadScript("https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js", function() {
+      loadScript("https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js", function() {
         renderEcharts();
       });
     }

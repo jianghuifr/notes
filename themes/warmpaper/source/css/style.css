@@ -1456,6 +1456,22 @@ figure.highlight .token.deleted {
     color: var(--color-accent);
   }
 
+  /* Search toggle becomes a matching row too. */
+  .site-nav .search-toggle {
+    margin: 0.125rem 0 0;
+    padding: 0.7rem 0.85rem;
+    gap: 0.6rem;
+    align-self: stretch;
+    justify-content: flex-start;
+    border-radius: var(--radius);
+    color: var(--color-text-secondary);
+  }
+
+  .site-nav .search-toggle:hover {
+    background-color: rgba(218, 119, 86, 0.1);
+    color: var(--color-accent);
+  }
+
   .post-title {
     font-size: 1.5rem;
   }
@@ -1495,4 +1511,305 @@ figure.highlight .token.deleted {
   border: none;
   background: none;
   box-shadow: none;
+}
+
+/* ============================================
+   Reading progress bar
+   ============================================ */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.reading-progress-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), #E8B27E);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.08s linear;
+}
+
+/* ============================================
+   Back to top
+   ============================================ */
+.back-to-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 150;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-light);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.25s, visibility 0.25s, transform 0.25s, color 0.2s, border-color 0.2s, box-shadow 0.25s;
+}
+
+.back-to-top svg {
+  width: 18px;
+  height: 18px;
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ============================================
+   Scroll reveal
+   ============================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   Search toggle (header)
+   ============================================ */
+.search-toggle {
+  background: none;
+  border: none;
+  padding: 6px;
+  margin-left: 4px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.search-toggle:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.search-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================================
+   Search overlay
+   ============================================ */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 1rem 1rem;
+  background: rgba(31, 27, 23, 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.search-overlay.open {
+  display: flex;
+  animation: search-fade 0.15s ease;
+}
+
+@keyframes search-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.search-panel {
+  width: 100%;
+  max-width: 640px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-tertiary);
+}
+
+.search-input-wrap svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.search-input-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  color: var(--color-text);
+}
+
+.search-input-wrap input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.search-close {
+  border: none;
+  background: var(--color-bg);
+  color: var(--color-text-tertiary);
+  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.search-close:hover {
+  color: var(--color-text);
+  background: var(--color-surface-hover);
+}
+
+.search-results {
+  max-height: 55vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.search-result {
+  display: block;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background 0.15s;
+}
+
+.search-result:last-child {
+  border-bottom: none;
+}
+
+.search-result:hover,
+.search-result.active {
+  background: var(--color-surface-hover);
+}
+
+.search-result-title {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.search-result-title mark {
+  background: rgba(218, 119, 86, 0.18);
+  color: var(--color-accent-hover);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.search-result-snippet {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.search-result-snippet mark {
+  background: rgba(218, 119, 86, 0.14);
+  color: var(--color-accent-hover);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.search-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 768px) {
+  .search-overlay {
+    padding: 8vh 0.75rem 0.75rem;
+  }
+}
+
+/* ============================================
+   Image lightbox
+   ============================================ */
+.post-content img {
+  cursor: zoom-in;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.82);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.lightbox.open {
+  display: flex;
+  animation: search-fade 0.15s ease;
+}
+
+.lightbox-figure {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  cursor: zoom-out;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: calc(100vh - 6rem);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.lightbox-caption {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  text-align: center;
 }

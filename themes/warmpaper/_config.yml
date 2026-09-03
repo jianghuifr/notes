@@ -2,11 +2,11 @@
 
 # Navigation menu
 menu:
-  Home: /
-  Archives: /archives
-  Tags: /tags
-  About: /about
-  Album: /album
+  首页: /
+  归档: /archives
+  标签: /tags
+  关于: /about
+  相册: /album
 
 # Table of Contents (right sidebar on post pages)
 toc:

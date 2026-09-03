@@ -1,0 +1,53 @@
+# Mono Theme Configuration — 黑白灰轻量主题
+
+# Navigation menu
+menu:
+  首页: /
+  归档: /archives
+  标签: /tags
+  关于: /about
+  相册: /album
+
+# Table of Contents (right sidebar on post pages)
+toc:
+  enable: true
+  max_depth: 3
+  min_depth: 2
+  list_number: false
+
+# Math (LaTeX) rendering via MathJax v4.
+math:
+  enable: true
+
+# Waline comment
+waline:
+  enable: false
+  serverURL: 'https://your-server-url'
+
+# Giscus comment (GitHub Discussions)
+giscus:
+  enable: false
+  repo: 'user/repo'
+  repo_id: ''
+  category: 'Announcements'
+  category_id: ''
+  mapping: 'pathname'
+  strict: '0'
+  reactions_enabled: '1'
+  emit_metadata: '0'
+  input_position: 'bottom'
+  lang: 'zh-CN'
+  theme_light: 'light'
+  theme_dark: 'dark'
+
+# Post excerpt
+excerpt_link: 阅读全文
+
+# Footer
+copyright: ""
+
+# Code blocks — MicroLighter
+code:
+  # copy button & line numbers are always on (user requested)
+  copy: true
+  line_numbers: true

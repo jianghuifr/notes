@@ -8,21 +8,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-gb-web@1.522.0/lxgwwenkaigb-regular/result.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-gb-web@1.522.0/lxgwwenkaigb-medium/result.css">
 
-  <% if (theme.waline && theme.waline.enable) { %>
-    <%- css('css/waline') %>
-  <% } %>
-  <% if (theme.giscus && theme.giscus.enable) { %>
-    <%- css('css/giscus') %>
-  <% } %>
-  <% if ((page.math !== undefined) ? page.math : (theme.math && theme.math.enable)) { %>
+  <% if (theme.math && theme.math.enable) { %>
+    <%- css('css/theme') %>
     <%- css('css/math') %>
+  <% } else { %>
+    <%- css('css/theme') %>
   <% } %>
-  <%- css('css/style') %>
-  <%# Inline to avoid FOUC. Storage key kept in sync with source/js/main.js %>
+  <%# Inline to avoid FOUC. Storage key kept in sync with source/js/app.js %>
   <script>
     (function () {
       try {
-        var saved = localStorage.getItem('warmpaper-theme');
+        var saved = localStorage.getItem('mono-theme');
         if (saved === 'dark' || saved === 'light') {
           document.documentElement.setAttribute('data-theme', saved);
         }
